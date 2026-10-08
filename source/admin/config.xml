@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+<fieldset name="frontend" label="COM_NEWSLETTERBRIDGE_MENU_TITLE">
+  <field name="editor" type="plugins" folder="editors" label="COM_NEWSLETTERBRIDGE_EDITOR" description="COM_NEWSLETTERBRIDGE_EDITOR_DESC" default="tinymce" filter="cmd" />
+</fieldset>
+<fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL">
+  <field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" filter="rules" validate="rules" component="com_newsletterbridge" section="component" />
+</fieldset></config>

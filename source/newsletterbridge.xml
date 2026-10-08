@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" method="upgrade">
+  <name>COM_NEWSLETTERBRIDGE</name><author>SuperSoft</author>
+  <creationDate>2026-10-08</creationDate><version>1.0.0</version>
+  <license>GNU General Public License version 2 or later</license>
+  <description>COM_NEWSLETTERBRIDGE_DESCRIPTION</description>
+  <namespace path="src">SuperSoft\Component\Newsletterbridge</namespace>
+  <files folder="site"><folder>src</folder><folder>tmpl</folder><folder>forms</folder></files>
+  <languages folder="site/language">
+    <language tag="el-GR">el-GR/com_newsletterbridge.ini</language>
+    <language tag="el-GR">el-GR/com_newsletterbridge.sys.ini</language>
+    <language tag="en-GB">en-GB/com_newsletterbridge.ini</language>
+    <language tag="en-GB">en-GB/com_newsletterbridge.sys.ini</language>
+  </languages>
+  <administration>
+    <menu>COM_NEWSLETTERBRIDGE</menu>
+    <files folder="admin"><folder>services</folder><folder>src</folder><filename>access.xml</filename><filename>config.xml</filename><filename>compatibility.json</filename></files>
+    <languages folder="admin/language">
+      <language tag="el-GR">el-GR/com_newsletterbridge.ini</language>
+      <language tag="el-GR">el-GR/com_newsletterbridge.sys.ini</language>
+      <language tag="en-GB">en-GB/com_newsletterbridge.ini</language>
+      <language tag="en-GB">en-GB/com_newsletterbridge.sys.ini</language>
+    </languages>
+  </administration>
+  <media folder="media" destination="com_newsletterbridge"><folder>css</folder><folder>js</folder></media>
+</extension>

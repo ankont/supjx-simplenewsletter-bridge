@@ -1,0 +1,13 @@
+.newsletterbridge { max-width: 100%; }
+.newsletterbridge .nb-actions, .newsletterbridge .nb-presets, .newsletterbridge .nb-search { display: flex; gap: .65rem; align-items: center; flex-wrap: wrap; margin: 1rem 0; }
+.newsletterbridge form { margin-block: 1rem; }
+.newsletterbridge .nb-actions form { margin: 0; }
+.newsletterbridge .nb-table { overflow-x: auto; }
+.newsletterbridge table { width: 100%; border-collapse: collapse; }
+.newsletterbridge th, .newsletterbridge td { text-align: start; padding: .65rem; border-bottom: 1px solid #aaa; vertical-align: top; }
+.newsletterbridge caption { text-align: start; font-weight: bold; }
+.newsletterbridge .nb-preview { width: 100%; min-height: 44rem; border: 1px solid #aaa; margin-top: 1rem; }
+.newsletterbridge progress { width: 100%; height: 1.5rem; }
+.newsletterbridge [hidden] { display: none !important; }
+.newsletterbridge .control-group { margin-block: 1rem; }
+.newsletterbridge .nb-placeholders { overflow-wrap: anywhere; }
