@@ -132,20 +132,32 @@ final class Bridge
             $this->db->updateObject('#__simplenewsletter_templates', $row, 'id');
         });
     }
-    public function presets(int $id): array
+    private function presetScope(int $id): void
     {
         if ($id) { $this->policy->require($this->policy->edit($this->item($id))); }
         else { $this->policy->require($this->policy->allows('core.create')); }
-        return PresetHelper::getPresets();
+    }
+    private function presetLibrary(): PresetLibrary { return new PresetLibrary($this->app, $this->db); }
+    public function presets(int $id): array
+    {
+        $this->presetScope($id);
+        return $this->presetLibrary()->choices();
+    }
+    public function canSavePreset(int $id): bool
+    {
+        $this->presetScope($id);
+        return $this->presetLibrary()->canSave();
     }
     public function preset(int $id, string $preset): array
     {
-        foreach ($this->presets($id) as $entry) {
-            if ($entry['id'] === $preset) {
-                return ['body' => ComponentHelper::filterText(PresetHelper::getBody($preset)), 'subject' => $entry['subject']];
-            }
-        }
-        throw new \RuntimeException('COM_NEWSLETTERBRIDGE_NOT_FOUND', 404);
+        $this->presetScope($id);
+        return $this->presetLibrary()->get($preset);
+    }
+    public function savePreset(int $id, array $raw): array
+    {
+        $this->presetScope($id);
+        $data = InputGuard::newsletter($raw);
+        return $this->presetLibrary()->save($data['title'], $data['subject'], $data['body']);
     }
     public function preview(int $id): string
     {

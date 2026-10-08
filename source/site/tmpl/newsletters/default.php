@@ -29,6 +29,7 @@ $userId = (int) Factory::getApplication()->getIdentity()->id;
 <?php if ((int) $item->checked_out) : ?><span><?= Text::_('COM_NEWSLETTERBRIDGE_CHECKED_OUT') ?></span><?php endif; ?>
 <?php endif; ?>
 <a class="btn btn-secondary" href="<?= $this->url('preview', (int) $item->id) ?>"><?= Text::_('COM_NEWSLETTERBRIDGE_PREVIEW') ?></a>
+<?php if ($this->policy->archive($item)) : ?><a class="btn btn-secondary" href="<?= $this->url('publications', (int) $item->id) ?>"><?= Text::_('COM_NEWSLETTERBRIDGE_ARCHIVE_MANAGE') ?></a><?php endif; ?>
 <?php if ($this->policy->send($item)) : ?><a class="btn btn-secondary" href="<?= $this->url('send', (int) $item->id) ?>"><?= Text::_('COM_NEWSLETTERBRIDGE_SEND') ?></a><?php endif; ?>
 <?php if ($this->policy->edit($item) && $this->policy->allows('core.edit.state')) : ?>
 <form action="<?= $this->url() ?>" method="post">

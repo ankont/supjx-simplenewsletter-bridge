@@ -12,6 +12,8 @@ namespace Joomla\CMS\Component { class ComponentHelper {
     public static $params;
     public static function getParams($name) { return self::$params ??= new class { private $values=[]; public function get($key,$default) { return $this->values[$key] ?? $default; } public function set($key,$value) { $this->values[$key]=$value; } }; }
 } }
+namespace Joomla\CMS\Language { class Text { public static function _($key) { return $key; } } }
+namespace Joomla\String { class StringHelper { public static function strtolower($text) { return function_exists('mb_strtolower') ? mb_strtolower($text,'UTF-8') : strtolower($text); } } }
 namespace Joomla\CMS\Mail { interface MailerFactoryInterface {} }
 namespace SaintArt\Component\SimpleNewsletter\Administrator\Helper {
     class NewsletterHelper {
@@ -26,8 +28,9 @@ namespace SaintArt\Component\SimpleNewsletter\Administrator\Helper {
 }
 namespace {
     define('_JEXEC', 1);
+    define('JPATH_SITE', dirname(__DIR__) . '/source/site');
     $base = dirname(__DIR__) . '/source/site/src/Service/';
-    foreach (['Policy','InputGuard','Bridge'] as $class) { require $base . $class . '.php'; }
+    foreach (['Policy','InputGuard','PresetNames','PresetLibrary','Bridge'] as $class) { require $base . $class . '.php'; }
     use SuperSoft\Component\Newsletterbridge\Site\Service\Policy;
     use SuperSoft\Component\Newsletterbridge\Site\Service\InputGuard;
     use SuperSoft\Component\Newsletterbridge\Site\Service\Bridge;
@@ -200,5 +203,21 @@ namespace {
         $b = new Bridge(new App(new User(7,$perms)),$db,$mvc);
         foreach (['status','process','cancel'] as $method) fails(fn () => $b->$method(20),403,'missing send grant ' . $method);
     }
+    $names=\SuperSoft\Component\Newsletterbridge\Site\Service\PresetNames::class;
+    $basePresets=[['id'=>'simple-letter','label'=>'Simple letter','names'=>['Simple letter','Απλή επιστολή']],
+        ['id'=>'hero-cta','label'=>'Hero','names'=>['Hero']]];
+    ok($names::builtin(' SIMPLE   LETTER ',$basePresets)==='simple-letter','normalised built-in name');
+    ok($names::builtin('Custom',$basePresets)===null,'new name does not shadow unrelated built-in');
+    $rows=[(object)['id'=>12,'title'=>'Simple letter','builtin_id'=>null,'saved_name'=>null],
+        (object)['id'=>11,'title'=>' simple LETTER ','builtin_id'=>null,'saved_name'=>null]];
+    $merged=$names::merge($basePresets,$rows);
+    ok(count($merged)===2 && $merged[0]['article_id']===12,'single option and newest readable article');
+    $rows=[(object)['id'=>13,'title'=>'Απλή επιστολή','builtin_id'=>'simple-letter','saved_name'=>'Απλή επιστολή']];
+    $merged=$names::merge($basePresets,$rows);
+    ok($merged[0]['id']==='simple-letter' && $merged[0]['title']==='Simple letter','translated shadow has one current-language label');
+    $rows[0]->title='Independent';$merged=$names::merge($basePresets,$rows);
+    ok(count($merged)===3 && $merged[0]['article_id']===0 && $merged[2]['id']==='article-13','external rename detaches shadow');
+    $merged=$names::merge($basePresets,[(object)['id'=>14,'title'=>'<Title & characters>','builtin_id'=>null,'saved_name'=>null]]);
+    ok($merged[2]['title']==='<Title & characters>','custom labels stay plain data for escaped render');
     echo 'PASS: ' . $checks . " assertions; mock transport only, no external state changed.\n";
 }

@@ -9,4 +9,5 @@
   <action name="core.edit.own" title="JACTION_EDITOWN" />
   <action name="core.edit.state" title="JACTION_EDITSTATE" />
   <action name="newsletterbridge.send" title="COM_NEWSLETTERBRIDGE_ACCESS_SEND" />
+  <action name="newsletterbridge.archive" title="COM_NEWSLETTERBRIDGE_ACCESS_ARCHIVE" />
 </section></access>

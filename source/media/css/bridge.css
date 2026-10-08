@@ -11,3 +11,13 @@
 .newsletterbridge [hidden] { display: none !important; }
 .newsletterbridge .control-group { margin-block: 1rem; }
 .newsletterbridge .nb-placeholders { overflow-wrap: anywhere; }
+
+.newsletterbridge .nb-honeypot{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+.newsletterbridge .nb-subscribe{max-width:32rem;display:grid;gap:1rem;margin-bottom:2rem}
+.newsletterbridge .nb-archive-list li{margin-bottom:1rem}
+.newsletterbridge .nb-archive-list span{margin-inline-start:1rem}
+.newsletterbridge .nb-public-body{overflow-wrap:anywhere;overflow-x:auto}
+.newsletterbridge .nb-public-body img{max-width:100%;height:auto}
+
+.newsletterbridge .nb-preset-save{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-block:1rem}
+.newsletterbridge .nb-preset-save p{flex-basis:100%;margin:0}

@@ -10,9 +10,17 @@ HTMLHelper::_('behavior.formvalidator');
 <div class="nb-presets">
 <label for="nb-preset"><?= Text::_('COM_NEWSLETTERBRIDGE_PRESET') ?></label>
 <select id="nb-preset"><option value=""><?= Text::_('COM_NEWSLETTERBRIDGE_SELECT_PRESET') ?></option>
-<?php foreach ($this->presets as $preset) : ?><option value="<?= $this->escape($preset['id']) ?>"><?= $this->escape(Text::_('COM_NEWSLETTERBRIDGE_PRESET_' . str_replace('-', '_', strtoupper($preset['id'])))) ?></option><?php endforeach; ?>
+<?php foreach ($this->presets as $preset) : ?><option value="<?= $this->escape($preset['id']) ?>"><?= $this->escape($preset['title']) ?></option><?php endforeach; ?>
 </select><button class="btn btn-secondary" type="button" data-nb-preset><?= Text::_('COM_NEWSLETTERBRIDGE_APPLY_PRESET') ?></button>
 </div>
+<?php if ($this->canSavePreset) : ?>
+<div class="nb-preset-save">
+<label for="nb-preset-name"><?= Text::_('COM_NEWSLETTERBRIDGE_PRESET_NAME') ?></label>
+<input id="nb-preset-name" type="text" maxlength="255" required>
+<button class="btn btn-secondary" type="button" data-nb-save-preset><?= Text::_('COM_NEWSLETTERBRIDGE_SAVE_PRESET') ?></button>
+<p><?= Text::_('COM_NEWSLETTERBRIDGE_SAVE_PRESET_HELP') ?></p>
+</div>
+<?php else : ?><p><?= Text::_('COM_NEWSLETTERBRIDGE_SAVE_PRESET_UNAVAILABLE') ?></p><?php endif; ?>
 <p data-nb-message role="status" aria-live="polite"></p>
 <form action="<?= $this->url('newsletter', (int) $this->item->id) ?>" method="post" id="nb-form" class="form-validate">
 <?= $this->form->renderField('title') ?>

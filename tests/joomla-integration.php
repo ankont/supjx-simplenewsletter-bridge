@@ -28,7 +28,7 @@ class BridgeTestUser extends \Joomla\CMS\User\User {
     public function authorise($action,$assetname=null) { return isset($this->testRights[$assetname.':'.$action]); }
 }
 $user=new BridgeTestUser(); $user->id=900000001; $user->guest=0; $user->groups=[2]; $user->name='Bridge test'; $user->email='author@example.invalid';
-foreach (['newsletterbridge.access','core.create','core.edit.own','core.edit.state','newsletterbridge.send'] as $action) $user->testRights['com_newsletterbridge:'.$action]=true;
+foreach (['newsletterbridge.access','core.create','core.edit.own','core.edit.state','newsletterbridge.send','newsletterbridge.archive'] as $action) $user->testRights['com_newsletterbridge:'.$action]=true;
 $user->testRights['com_simplenewsletter:simplenewsletter.send']=true;
 $app->loadIdentity($user);
 $upstream=Dependency::factory(); check($app->getName()==='site','site application');
@@ -37,6 +37,8 @@ $prefix='nbtest_'.bin2hex(random_bytes(6)).'_';
 $options=['host'=>$app->get('host'),'user'=>$app->get('user'),'password'=>$app->get('password'),'database'=>$app->get('db'),'prefix'=>$prefix,'select'=>true];
 $db=(new \Joomla\Database\DatabaseFactory())->getDriver($app->get('dbtype','mysqli'),$options);
 $created=[];
+$bridgeParams=\Joomla\CMS\Component\ComponentHelper::getParams('com_newsletterbridge');
+$priorPresetCategory=$bridgeParams->get('preset_category',0);$bridgeParams->set('preset_category',0);
 $mock=new class implements \Joomla\CMS\Mail\MailerFactoryInterface {
     public $messages=[];
     public function createMailer(?\Joomla\Registry\Registry $settings=null): \Joomla\CMS\Mail\MailerInterface {
@@ -61,6 +63,8 @@ try {
         $db->setQuery('CREATE TABLE '.$db->quoteName($target).' LIKE '.$db->quoteName($original->getPrefix().'simplenewsletter_'.$table))->execute();
         $created[]=$target;
     }
+    $db->setQuery('CREATE TABLE '.$db->quoteName($prefix.'newsletterbridge_archive').' LIKE '.$db->quoteName($original->getPrefix().'newsletterbridge_archive'))->execute();
+    $created[]=$prefix.'newsletterbridge_archive';
     $factory=new \Joomla\CMS\MVC\Factory\MVCFactory('SaintArt\\Component\\SimpleNewsletter');
     $factory->setDatabase($db); $factory->setDispatcher($c->get(\Joomla\Event\DispatcherInterface::class));
     $factory->setUserFactory($c->get(\Joomla\CMS\User\UserFactoryInterface::class));
@@ -113,6 +117,48 @@ try {
     for($i=0;$i<3;$i++) $job2=$bridge->process($job2['jobId']);
     check($job2['done'] && $job2['sent']===3 && $job2['failed']===0,'complete batch job');
     check($bridge->jobs($id)['total']===2,'job history');
+
+    $archive=new \SuperSoft\Component\Newsletterbridge\Site\Service\Archive($app,$db,$bridge);
+    check($archive->listing()['total']===0,'archive private by default');
+    denied(fn()=>$archive->draft($job['jobId']),409,'cancelled job cannot become public');
+    $draft=$archive->draft($job2['jobId']);
+    check($draft->revision===0 && !str_contains($draft->body,'{email}'),'snapshot anonymised before author preview');
+    check($archive->editions($id)['total']===1,'only completed deliveries available');
+    $public=['title'=>'Public issue','subject'=>'Public subject','body'=>'<p>Hello {name}. person@example.invalid <a href="{unsubscribe_link}">Leave</a></p>'];
+    denied(fn()=>$archive->save($job2['jobId'],0,$public,true,false),400,'publication requires explicit review');
+    unset($user->testRights['com_newsletterbridge:newsletterbridge.archive']);
+    denied(fn()=>$archive->draft($job2['jobId']),403,'archive distinct permission');
+    denied(fn()=>$archive->save($job2['jobId'],0,$public,true,true),403,'save checks archive grant');
+    $user->testRights['com_newsletterbridge:newsletterbridge.archive']=true;
+    $user->id=900000002;
+    denied(fn()=>$archive->draft($job2['jobId']),403,'foreign archive draft denied');
+    denied(fn()=>$archive->save($job2['jobId'],0,$public,true,true),403,'foreign publication denied');
+    denied(fn()=>$archive->withdraw($job2['jobId'],0),403,'foreign withdrawal denied');
+    $user->id=900000001;
+    unset($user->testRights['com_simplenewsletter:simplenewsletter.send']);
+    $archive->save($job2['jobId'],0,$public,false,false);
+    check($archive->listing()['total']===0 && (int)$archive->draft($job2['jobId'])->revision===1,'private save without send rights');
+    denied(fn()=>$archive->issue($job2['jobId']),404,'private issue hidden by direct URL');
+    denied(fn()=>$archive->save($job2['jobId'],0,$public,true,true),409,'stale revision cannot overwrite');
+    $archive->save($job2['jobId'],1,$public,true,true);
+    check($archive->listing()['total']===1,'explicit approved copy visible');
+    $published=$archive->issue($job2['jobId']);
+    check(!str_contains($published->body,'person@example.invalid') && !str_contains($published->body,'href='),'public copy contains no email or personal link');
+    check(array_keys((array)$published)===['job_id','title','subject','body','sent_at'],'public response allowlist');
+    $user->id=0;
+    check($archive->issue($job2['jobId'])->title==='Public issue','anonymous public reading');
+    denied(fn()=>$archive->draft($job2['jobId']),403,'anonymous author endpoint denied');
+    $user->id=900000001;
+    $archive->withdraw($job2['jobId'],2);
+    denied(fn()=>$archive->issue($job2['jobId']),404,'withdrawal immediate');
+    denied(fn()=>$archive->withdraw($job2['jobId'],2),409,'stale withdrawal denied');
+    $archive->save($job2['jobId'],3,$public,true,true);
+    $archive->save($job2['jobId'],4,$public,false,false);
+    check($archive->listing()['total']===0,'saving privately withdraws previous publication');
+    $archive->save($job2['jobId'],5,$public,true,true);
+    $db->setQuery('UPDATE #__simplenewsletter_jobs SET state=3 WHERE id='.(int)$job2['jobId'])->execute();
+    denied(fn()=>$archive->issue($job2['jobId']),404,'upstream invalidation hides public copy');
+    $user->testRights['com_simplenewsletter:simplenewsletter.send']=true;
     unset($user->testRights['com_simplenewsletter:simplenewsletter.send']);
     foreach (['status','process','cancel'] as $method) denied(fn()=>$bridge->$method($job2['jobId']),403,'dual ACL '.$method);
     $user->testRights['com_simplenewsletter:simplenewsletter.send']=true;
@@ -129,5 +175,6 @@ try {
     $form=$model->getForm([],false); check($form->getField('published')===false,'state field removed by ACL');
     echo 'PASS: '.$checks.' Joomla '.(new \Joomla\CMS\Version())->getShortVersion().' integration assertions; '.count($mock->messages).' messages captured in memory; zero real mail.'.PHP_EOL;
 } finally {
+    $bridgeParams->set('preset_category',$priorPresetCategory);
     foreach (array_reverse($created) as $table) { $db->setQuery('DROP TABLE '.$db->quoteName($table))->execute(); }
 }

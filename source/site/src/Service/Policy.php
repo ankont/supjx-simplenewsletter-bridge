@@ -19,6 +19,10 @@ final class Policy
             || ($this->allows('core.edit.own') && (int) $item->created_by === (int) $this->user->id));
     }
     public function read(object $item): bool { return $this->edit($item); }
+    public function archive(object $item): bool
+    {
+        return $this->edit($item) && $this->allows('newsletterbridge.archive');
+    }
     public function send(object $item): bool
     {
         return $this->read($item) && $this->allows('newsletterbridge.send')

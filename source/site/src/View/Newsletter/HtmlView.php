@@ -9,6 +9,7 @@ class HtmlView extends BridgeView
     public $item;
     public $form;
     public $presets;
+    public $canSavePreset;
     public function display($tpl = null)
     {
         $this->initialise();
@@ -30,6 +31,7 @@ class HtmlView extends BridgeView
         $this->form = $this->getModel()->getForm($data);
         if (!$this->form) { throw new \RuntimeException('COM_NEWSLETTERBRIDGE_LOAD_FAILED', 500); }
         $this->presets = $this->bridge->presets($id);
+        $this->canSavePreset = $this->bridge->canSavePreset($id);
         return parent::display($tpl);
     }
 }

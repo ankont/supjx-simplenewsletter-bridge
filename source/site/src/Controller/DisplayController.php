@@ -11,12 +11,13 @@ class DisplayController extends BaseController
     public function display($cachable = false, $urlparams = [])
     {
         try {
-            new Bridge();
             $view = $this->input->getCmd('view', 'newsletters');
-            if (!in_array($view, ['newsletters','newsletter','preview','send'], true)
+            if (!in_array($view, ['newsletters','newsletter','preview','send','archive','issue','publications','publication'], true)
                 || $this->input->getCmd('layout', 'default') !== 'default') {
                 throw new \RuntimeException('COM_NEWSLETTERBRIDGE_NOT_FOUND', 404);
             }
+            if (in_array($view, ['archive','issue'], true)) { \SuperSoft\Component\Newsletterbridge\Site\Service\Dependency::factory(); }
+            else { new Bridge(); }
             $this->app->allowCache(false);
             $this->app->setHeader('Cache-Control', 'private, no-store', true);
             return parent::display(false, $urlparams);

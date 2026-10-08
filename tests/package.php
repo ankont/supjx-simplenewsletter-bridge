@@ -25,7 +25,7 @@ foreach (['site','admin'] as $client) {
     }
 }
 $m = simplexml_load_file($source . '/newsletterbridge.xml');
-check((string) $m->creationDate !== '' && (string) $m->version === '1.0.0', 'Manifest metadata');
+check((string) $m->creationDate !== '' && (string) $m->version === '1.2.0', 'Manifest metadata');
 foreach ([$m->files, $m->administration->files] as $group) {
     foreach ($group->children() as $entry) check(file_exists($source . '/' . $group['folder'] . '/' . (string) $entry), 'Missing manifest file');
 }

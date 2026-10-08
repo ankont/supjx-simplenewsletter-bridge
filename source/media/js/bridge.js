@@ -3,8 +3,8 @@
   const opts = window.Joomla?.getOptions('com_newsletterbridge');
   if (!opts) return;
   const labels = window.Joomla.getOptions('com_newsletterbridge.labels', {});
-  async function request(task, fields) {
-    const data = new URLSearchParams({ task: 'send.' + task, ...fields });
+  async function request(task, fields, controller = 'send') {
+    const data = new URLSearchParams({ task: controller + '.' + task, ...fields });
     data.set(opts.token, '1');
     const response = await fetch(opts.endpoint, { method: 'POST', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: data });
@@ -28,16 +28,55 @@
       const preset = editorRoot.querySelector('#nb-preset').value;
       if (!preset || !window.confirm(labels.preset_confirm)) return;
       event.target.disabled = true;
+      const save = editorRoot.querySelector('[data-nb-save-preset]');
+      if (save) save.disabled = true;
       try {
         const { data } = await request('preset', { id: editorRoot.dataset.id, preset });
         if (editor()) editor().setValue(data.body);
         else if (textarea) textarea.value = data.body;
         form.querySelector('[name="jform[subject]"]').value = data.subject;
+        const name = editorRoot.querySelector('#nb-preset-name');
+        if (name) name.value = editorRoot.querySelector('#nb-preset').selectedOptions[0].textContent;
         editorRoot.querySelector('[data-nb-message]').textContent = '';
       } catch (error) { editorRoot.querySelector('[data-nb-message]').textContent = error.message; }
-      finally { event.target.disabled = false; }
+      finally { event.target.disabled = false; if (save) save.disabled = false; }
     });
   }
+  const savePreset = editorRoot?.querySelector('[data-nb-save-preset]');
+  savePreset?.addEventListener('click', async () => {
+    const form = editorRoot.querySelector('form');
+    const name = editorRoot.querySelector('#nb-preset-name');
+    const subject = form.querySelector('[name="jform[subject]"]');
+    const textarea = form.querySelector('[name="jform[body]"]');
+    const editor = window.JoomlaEditor?.get(textarea?.id) || window.Joomla.editors?.instances[textarea?.id];
+    if (!name.reportValidity() || !subject.reportValidity()) return;
+    const apply = editorRoot.querySelector('[data-nb-preset]');
+    apply.disabled = true; savePreset.disabled = true;
+    try {
+      const result = await request('save', { id: editorRoot.dataset.id, name: name.value,
+        subject: subject.value, body: editor ? editor.getValue() : textarea.value }, 'preset');
+      const select = editorRoot.querySelector('#nb-preset');
+      const placeholder = select.options[0].cloneNode(true);
+      select.replaceChildren(placeholder);
+      for (const preset of result.data.presets) {
+        const option = document.createElement('option'); option.value = preset.id; option.textContent = preset.title; select.append(option);
+      }
+      select.value = result.data.preset;
+      name.value = select.selectedOptions[0]?.textContent || name.value;
+      editorRoot.querySelector('[data-nb-message]').textContent = result.message;
+    } catch (error) { editorRoot.querySelector('[data-nb-message]').textContent = error.message; }
+    finally { apply.disabled = false; savePreset.disabled = false; }
+  });
+  const publicationForm = document.querySelector('[data-nb-publication] form');
+  publicationForm?.addEventListener('submit', event => {
+    if (event.submitter?.value === 'publication.withdraw') return;
+    const textarea = publicationForm.querySelector('[name="jform[body]"]');
+    const editor = window.JoomlaEditor?.get(textarea?.id) || window.Joomla.editors?.instances[textarea?.id];
+    if (editor) textarea.value = editor.getValue();
+    const review = publicationForm.querySelector('[name="reviewed"]');
+    review.required = event.submitter?.value === 'publication.publish';
+    if (!publicationForm.checkValidity()) { event.preventDefault(); publicationForm.reportValidity(); }
+  });
   const root = document.querySelector('[data-nb-send]');
   if (!root) return;
   let busy = false, stop = false;

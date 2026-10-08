@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form><fieldset name="newsletter">
+  <field name="title" type="text" label="COM_NEWSLETTERBRIDGE_TITLE" required="true" maxlength="255" filter="string" />
+  <field name="subject" type="text" label="COM_NEWSLETTERBRIDGE_SUBJECT" required="true" maxlength="255" filter="string" />
+  <field name="body" type="editor" label="COM_NEWSLETTERBRIDGE_BODY" required="true" filter="Joomla\CMS\Component\ComponentHelper::filterText" buttons="false" height="500" />
+</fieldset></form>

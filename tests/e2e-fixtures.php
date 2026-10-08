@@ -7,7 +7,15 @@ if($action==='cleanup') {
     $state=json_decode(file_get_contents($stateFile),true);
     if(isset($state['override'])) { $resolved=realpath($state['override']); $templates=realpath(JPATH_SITE.'/templates').DIRECTORY_SEPARATOR; if($resolved && str_starts_with($resolved,$templates))unlink($resolved); }
     foreach ($state['assets'] as $name=>$rules) {
-        $asset=new \Joomla\CMS\Table\Asset($db); $asset->loadByName($name); $asset->rules=$rules; $asset->store();
+        $asset=new \Joomla\CMS\Table\Asset($db); $asset->loadByName($name);
+        $current=json_decode($asset->rules,true)?:[];$original=json_decode($rules,true)?:[];
+        foreach($current as $action=>&$grants) {
+            foreach($state['groups'] as $group)unset($grants[(string)$group]);
+            if(!$grants && !array_key_exists($action,$original))unset($current[$action]);
+        }
+        unset($grants);
+        // Preserve unrelated ACL changes made while the browser fixtures existed.
+        $asset->rules=$current==$original?$rules:json_encode($current);$asset->store();
     }
     foreach ($state['users'] as $id) {
         $db->setQuery('DELETE FROM #__user_usergroup_map WHERE user_id = '.(int)$id)->execute();
@@ -17,7 +25,7 @@ if($action==='cleanup') {
     foreach ($state['groups'] as $id) { $g=new \Joomla\CMS\Table\Usergroup($db); if($g->load($id))$g->delete($id); }
     foreach ($state['users'] as $owner) {
         $ids=$db->setQuery('SELECT id FROM #__simplenewsletter_jobs WHERE created_by = '.(int)$owner)->loadColumn();
-        foreach($ids as $id) { $db->setQuery('DELETE FROM #__simplenewsletter_queue WHERE job_id = '.(int)$id)->execute(); $db->setQuery('DELETE FROM #__simplenewsletter_jobs WHERE id = '.(int)$id)->execute(); }
+        foreach($ids as $id) { $db->setQuery('DELETE FROM #__newsletterbridge_archive WHERE job_id = '.(int)$id)->execute(); $db->setQuery('DELETE FROM #__simplenewsletter_queue WHERE job_id = '.(int)$id)->execute(); $db->setQuery('DELETE FROM #__simplenewsletter_jobs WHERE id = '.(int)$id)->execute(); }
         $db->setQuery('DELETE FROM #__simplenewsletter_templates WHERE created_by = '.(int)$owner)->execute();
     }
     unlink($stateFile); echo "Browser fixtures removed; original ACL restored.\n"; exit;
@@ -39,7 +47,7 @@ foreach(['author','sender'] as $role) {
     $id=(int)$u->id; $state['users'][]=$id; $state[$role]=['id'=>$id,'group'=>$group]; file_put_contents($stateFile,json_encode($state));
     $map=(object)['user_id'=>$id,'group_id'=>$group];$db->insertObject('#__user_usergroup_map',$map);
     $asset=new \Joomla\CMS\Table\Asset($db);$asset->loadByName('com_newsletterbridge');$rules=json_decode($asset->rules,true)?:[];
-    $grants=['newsletterbridge.access','core.create','core.edit.own'];
+    $grants=['newsletterbridge.access','core.create','core.edit.own','newsletterbridge.archive'];
     if($role==='sender')$grants=array_merge($grants,['core.edit.state','newsletterbridge.send']);
     foreach($grants as $grant)$rules[$grant][(string)$group]=1;
     $asset->rules=json_encode($rules);$asset->store();

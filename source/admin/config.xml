@@ -2,6 +2,7 @@
 <config>
 <fieldset name="frontend" label="COM_NEWSLETTERBRIDGE_MENU_TITLE">
   <field name="editor" type="plugins" folder="editors" label="COM_NEWSLETTERBRIDGE_EDITOR" description="COM_NEWSLETTERBRIDGE_EDITOR_DESC" default="tinymce" filter="cmd" />
+  <field name="preset_category" type="category" extension="com_content" label="COM_NEWSLETTERBRIDGE_PRESET_CATEGORY" description="COM_NEWSLETTERBRIDGE_PRESET_CATEGORY_DESC" default="0" filter="integer"><option value="0">JNONE</option></field>
 </fieldset>
 <fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL">
   <field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" filter="rules" validate="rules" component="com_newsletterbridge" section="component" />
