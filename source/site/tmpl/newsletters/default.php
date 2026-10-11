@@ -5,8 +5,9 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Factory;
 $userId = (int) Factory::getApplication()->getIdentity()->id;
 ?>
-<div class="newsletterbridge">
+<div class="newsletterbridge nb-list">
 <h1><?= Text::_('COM_NEWSLETTERBRIDGE_MENU_TITLE') ?></h1>
+<div class="nb-toolbar">
 <?php if ($this->policy->allows('core.create')) : ?><a class="btn btn-primary" href="<?= $this->url('newsletter') ?>"><?= Text::_('COM_NEWSLETTERBRIDGE_NEW') ?></a><?php endif; ?>
 <form action="<?= $this->url() ?>" method="get" class="nb-search">
 <input type="hidden" name="option" value="com_newsletterbridge"><input type="hidden" name="view" value="newsletters">
@@ -15,6 +16,7 @@ $userId = (int) Factory::getApplication()->getIdentity()->id;
 <input type="search" id="nb-search" name="search" maxlength="100" value="<?= $this->escape($this->state->get('filter.search')) ?>">
 <button class="btn btn-secondary" type="submit"><?= Text::_('COM_NEWSLETTERBRIDGE_SEARCH') ?></button>
 </form>
+</div>
 <?php if (!$this->items) : ?><p><?= Text::_('COM_NEWSLETTERBRIDGE_EMPTY') ?></p><?php else : ?>
 <div class="nb-table"><table><caption><?= Text::_('COM_NEWSLETTERBRIDGE_NEWSLETTERS') ?></caption><thead><tr>
 <th scope="col"><?= Text::_('COM_NEWSLETTERBRIDGE_TITLE') ?></th><th scope="col"><?= Text::_('COM_NEWSLETTERBRIDGE_SUBJECT') ?></th><th scope="col"><?= Text::_('JSTATUS') ?></th><th scope="col"><?= Text::_('COM_NEWSLETTERBRIDGE_ACTIONS') ?></th>

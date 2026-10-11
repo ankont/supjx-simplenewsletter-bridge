@@ -20,3 +20,11 @@ Passed:
 Cleanup: temporary users, groups, newsletters, synthetic jobs, public archive copies and template override removed; original component ACL restored. Random-prefix integration tables dropped in finally. Installed bridge, Registered management menu item (219) and Public subscription/archive menu item (224) remain. No real newsletter was published by these tests. Temporary article preset category/articles/history were removed and the original preset-category setting restored.
 
 No real email was sent. SMTP delivery, confirmation-email delivery, inbox rendering and Joomla 5.4 remain unverified. In the earlier sending tests, automatic approval review rejected web POSTs because that session lacked a mock transport; those endpoints were tested through the mock-protected Joomla harness.
+
+## 1.3.0 — 2026-10-10
+
+- 15 standalone compatibility assertions: differing/unknown version and changed hashes are advisory; actual missing schema, API, InnoDB, enabled component and Joomla requirements still block.
+- 6 real Joomla compatibility/admin assertions: different and empty cached version still boot the MVC factory and render an administrator warning. Metadata changes were held in a transaction and rolled back in finally.
+- Existing unit tests: 3,677 assertions; archive tests: 46; actual Joomla integration: 56, with six messages captured in memory and zero real mail.
+- Browser: Greek terminology, native accessible selector, theme font Play, styled field height and focus. No compatibility warning rendered in the frontend editor.
+- 603 package assertions; installer succeeded as www-data. Temporary author/sender accounts and grants cleaned up.

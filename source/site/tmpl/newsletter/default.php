@@ -4,12 +4,12 @@ use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 HTMLHelper::_('behavior.formvalidator');
 ?>
-<div class="newsletterbridge" data-nb-editor data-id="<?= (int) $this->item->id ?>">
+<div class="newsletterbridge nb-editor" data-nb-editor data-id="<?= (int) $this->item->id ?>">
 <h1><?= Text::_($this->item->id ? 'COM_NEWSLETTERBRIDGE_EDIT' : 'COM_NEWSLETTERBRIDGE_NEW') ?></h1>
 <p><?= Text::_('COM_NEWSLETTERBRIDGE_EDITOR_HELP') ?></p>
 <div class="nb-presets">
 <label for="nb-preset"><?= Text::_('COM_NEWSLETTERBRIDGE_PRESET') ?></label>
-<select id="nb-preset"><option value=""><?= Text::_('COM_NEWSLETTERBRIDGE_SELECT_PRESET') ?></option>
+<select id="nb-preset" class="form-select inputbox nb-preset-select"><option value=""><?= Text::_('COM_NEWSLETTERBRIDGE_SELECT_PRESET') ?></option>
 <?php foreach ($this->presets as $preset) : ?><option value="<?= $this->escape($preset['id']) ?>"><?= $this->escape($preset['title']) ?></option><?php endforeach; ?>
 </select><button class="btn btn-secondary" type="button" data-nb-preset><?= Text::_('COM_NEWSLETTERBRIDGE_APPLY_PRESET') ?></button>
 </div>
@@ -27,6 +27,7 @@ HTMLHelper::_('behavior.formvalidator');
 <?= $this->form->renderField('subject') ?>
 <?= $this->form->renderField('body') ?>
 <?php if ($this->policy->allows('core.edit.state')) : ?><?= $this->form->renderField('published') ?><?php endif; ?>
+<p><?= Text::_('COM_NEWSLETTERBRIDGE_PLACEHOLDERS_HELP') ?></p>
 <p class="nb-placeholders">{name}, {email}, {unsubscribe_link}, {confirm_link}, {sitename}, {siteurl}, {date}</p>
 <div class="nb-actions">
 <button class="btn btn-primary" type="submit" name="task" value="newsletter.save"><?= Text::_('COM_NEWSLETTERBRIDGE_SAVE') ?></button>

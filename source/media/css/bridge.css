@@ -21,3 +21,64 @@
 
 .newsletterbridge .nb-preset-save{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-block:1rem}
 .newsletterbridge .nb-preset-save p{flex-basis:100%;margin:0}
+
+/* Inherit template typography/colours and use Joomla's standard form classes. */
+.newsletterbridge .nb-presets { gap: .75rem; }
+.newsletterbridge .nb-presets label { margin: 0; }
+.newsletterbridge .nb-preset-select {
+  flex: 1 1 18rem;
+  width: auto;
+  max-width: 32rem;
+  min-width: 0;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: .6rem 2.5rem .6rem .85rem;
+  font: inherit;
+  color: inherit;
+  border-radius: var(--bs-border-radius, .375rem);
+  border-color: var(--bs-border-color, #ced4da);
+  border-width: 1px;
+  border-style: solid;
+}
+.newsletterbridge .nb-preset-select:focus-visible {
+  outline: 2px solid var(--bs-primary, currentColor);
+  outline-offset: 2px;
+}
+@media (max-width: 36rem) {
+  .newsletterbridge .nb-preset-select { flex-basis: 100%; max-width: 100%; }
+}
+
+/* Compact authoring controls, scoped to the bridge's management views. */
+.newsletterbridge.nb-list > h1,
+.newsletterbridge.nb-editor > h1 { margin-block: 0 .75rem; }
+.newsletterbridge .nb-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; margin-block: .75rem; }
+.newsletterbridge .nb-toolbar .nb-search { gap: .5rem; margin: 0; }
+.newsletterbridge .nb-search > label,
+.newsletterbridge .nb-presets > label,
+.newsletterbridge .nb-preset-save > label { flex: 0 0 auto; width: auto; margin: 0; }
+.newsletterbridge #nb-search { flex: 1 1 12rem; width: 16rem; max-width: 24rem; min-width: 0; margin: 0; padding: .4rem .65rem; }
+.newsletterbridge.nb-list .btn,
+.newsletterbridge.nb-editor .btn { margin: 0; padding: .4rem .75rem; min-height: 2.5rem; line-height: 1.4; }
+.newsletterbridge .nb-table .nb-actions { gap: .35rem; margin: 0; }
+.newsletterbridge.nb-list th,
+.newsletterbridge.nb-list td { padding: .5rem; }
+.newsletterbridge.nb-editor > p { margin-block: .5rem; }
+.newsletterbridge.nb-editor [data-nb-message]:empty { display: none; }
+.newsletterbridge.nb-editor .nb-presets,
+.newsletterbridge.nb-editor .nb-preset-save { gap: .5rem; margin-block: .65rem; }
+.newsletterbridge #nb-preset { flex: 0 1 24rem; width: 24rem; max-width: 100%; min-height: 2.5rem; padding-block: .4rem; }
+.newsletterbridge #nb-preset-name { flex: 0 1 20rem; width: 20rem; max-width: 100%; min-width: 0; margin: 0; padding: .4rem .65rem; }
+.newsletterbridge.nb-editor #nb-form { margin-block: .75rem; }
+.newsletterbridge.nb-editor .control-group { margin-block: .65rem; }
+.newsletterbridge.nb-editor .control-label > label { margin-bottom: .25rem; }
+.newsletterbridge.nb-editor #nb-form > p { margin-block: .5rem; }
+.newsletterbridge.nb-editor .nb-actions { margin-block: .75rem; gap: .5rem; }
+@media (max-width: 36rem) {
+  .newsletterbridge .nb-toolbar .nb-search { flex: 1 1 100%; }
+  .newsletterbridge .nb-search > label { flex-basis: 100%; }
+  .newsletterbridge #nb-search { width: auto; max-width: none; }
+  .newsletterbridge .nb-presets > label,
+  .newsletterbridge .nb-preset-save > label { flex-basis: 100%; }
+  .newsletterbridge #nb-preset,
+  .newsletterbridge #nb-preset-name { flex: 1 1 100%; width: 100%; }
+}

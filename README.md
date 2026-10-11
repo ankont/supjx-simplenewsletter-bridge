@@ -1,12 +1,12 @@
 # Simple Newsletter Frontend Bridge — com_newsletterbridge
 
-Ανεξάρτητο Joomla component για διαχείριση newsletter από το frontend, χωρίς πρόσβαση στο administrator. Έκδοση **1.2.0**, creationDate **2026-10-08**. Δεν τροποποιεί το Simple Newsletter και δεν εξαρτάται από SmartBrowser, Catichisi ή συγκεκριμένο template.
+Ανεξάρτητο Joomla component για διαχείριση newsletter από το frontend, χωρίς πρόσβαση στο administrator. Έκδοση **1.3.0**, creationDate **2026-10-08**. Δεν τροποποιεί το Simple Newsletter και δεν εξαρτάται από SmartBrowser, Catichisi ή συγκεκριμένο template.
 
 ## Εγκατάσταση και menu item
 
 1. Εγκαταστήστε και ενεργοποιήστε το παρεχόμενο **Simple Newsletter 1.3.0**.
-2. Εγκαταστήστε το [dist/com_newsletterbridge-1.2.0.zip](dist/com_newsletterbridge-1.2.0.zip) από **System → Install → Extensions**. Το manifest είναι στη ρίζα του ZIP.
-3. Στο **Components → Simple Newsletter Frontend Bridge → Options**, ορίστε τον editor και τα δικαιώματα. Προεπιλογή είναι ο native **TinyMCE**, ανεξάρτητα από τον global editor. Άλλος editor πρέπει να επιτρέπει frontend authoring και να υποστηρίζει το Joomla editor API. Υπάρχει fallback στον editor None αν ο επιλεγμένος δεν είναι ενεργός.
+2. Εγκαταστήστε το [dist/com_newsletterbridge-1.3.0.zip](dist/com_newsletterbridge-1.3.0.zip) από **System → Install → Extensions**. Το manifest είναι στη ρίζα του ZIP.
+3. Στο **System → Global Configuration → Newsletter Bridge**, ορίστε τον editor και τα δικαιώματα. Προεπιλογή είναι ο native **TinyMCE**, ανεξάρτητα από τον global editor. Άλλος editor πρέπει να επιτρέπει frontend authoring και να υποστηρίζει το Joomla editor API. Υπάρχει fallback στον editor None αν ο επιλεγμένος δεν είναι ενεργός.
 4. Δημιουργήστε frontend στοιχείο μενού τύπου **Simple Newsletter Frontend Bridge → Newsletter management / Διαχείριση newsletter**. Περιορίστε το Access Level σε Registered ή σε κατάλληλο δικό σας View Level. Το menu access δεν αντικαθιστά το component ACL.
 5. Χρησιμοποιήστε το frontend menu για λίστα, δημιουργία, επεξεργασία, προεπισκόπηση και αποστολές. Αποθηκεύστε πριν από προεπισκόπηση ή αποστολή.
 
@@ -58,9 +58,9 @@
 
 ### Article presets (1.2.0)
 
-Στις **Options → Frontend → Κατηγορία newsletter presets** επιλέξτε μια ειδική κατηγορία άρθρων. Η προεπιλογή **Καμία** διατηρεί μόνο τα έτοιμα presets και απενεργοποιεί την αποθήκευση δικών σας. Δεν δημιουργείται κατηγορία ούτε μετακινούνται υπάρχοντα άρθρα αυτόματα. Μπορείτε να χρησιμοποιήσετε αδημοσίευτη κατηγορία με κατάλληλο View Level. Για αδημοσίευτη κατηγορία απαιτείται σχετικό create/edit/edit.own δικαίωμα κατηγορίας.
+Στις **Options → Frontend → Κατηγορία προτύπων ενημερωτικών δελτίων** επιλέξτε μια ειδική κατηγορία άρθρων. Η προεπιλογή **Καμία** διατηρεί μόνο τα έτοιμα presets και απενεργοποιεί την αποθήκευση δικών σας. Δεν δημιουργείται κατηγορία ούτε μετακινούνται υπάρχοντα άρθρα αυτόματα. Μπορείτε να χρησιμοποιήσετε αδημοσίευτη κατηγορία με κατάλληλο View Level. Για αδημοσίευτη κατηγορία απαιτείται σχετικό create/edit/edit.own δικαίωμα κατηγορίας.
 
-Στον newsletter editor εφαρμόστε ένα preset, κάντε τις αλλαγές και πατήστε **Αποθήκευση ως preset**. Αποθηκεύονται το τρέχον περιεχόμενο του editor και το θέμα, ακόμη και πριν αποθηκευτεί το newsletter. Το πεδίο **Όνομα preset** συμπληρώνεται όταν εφαρμόζετε ένα preset.
+Στον newsletter editor εφαρμόστε ένα preset, κάντε τις αλλαγές και πατήστε **Αποθήκευση ως πρότυπο**. Αποθηκεύονται το τρέχον περιεχόμενο του editor και το θέμα, ακόμη και πριν αποθηκευτεί το newsletter. Το πεδίο **Όνομα προτύπου** συμπληρώνεται όταν εφαρμόζετε ένα preset.
 
 - Ίδιο όνομα με έτοιμο preset: η δική σας έκδοση το αντικαθιστά στον επιλογέα, χωρίς αλλαγή στα αρχεία του Simple Newsletter και χωρίς δεύτερη επιλογή.
 - Ίδιο όνομα με ήδη αποθηκευμένο άρθρο: ενημερώνεται εκείνο το άρθρο, μόνο αν επιτρέπεται η επεξεργασία του. Δεν αλλάζουν owner, κατηγορία, access, state ή λοιπά metadata του υπάρχοντος άρθρου.
@@ -104,7 +104,7 @@
 
 Στόχος API: Joomla **5.4.x ή 6.x**, PHP υποστηριζόμενη από την αντίστοιχη Joomla έκδοση, MySQL/MariaDB με **InnoDB** και GET_LOCK/RELEASE_LOCK. **Λειτουργικά ελέγχθηκε στο Joomla 6.1.3 του local Docker περιβάλλοντος.** Το Joomla 5.4 δεν δοκιμάστηκε λειτουργικά σε αυτή τη συνεδρία.
 
-Υποστηρίζεται αποκλειστικά το παρεχόμενο **Simple Newsletter 1.3.0**, με την αναμενόμενη δομή των τεσσάρων πινάκων. Το compatibility.json περιέχει SHA-256 των κρίσιμων models/table/helpers, με κανονικοποίηση CRLF. Διαφορετική έκδοση ή αλλαγμένα κρίσιμα αρχεία απορρίπτονται με ευανάγνωστο μήνυμα. Πριν επιτραπεί άλλη έκδοση, χρειάζονται νέο audit, ενημέρωση contract και integration tests. Δεν αρκεί αλλαγή της δηλωμένης έκδοσης.
+Ελεγμένη έκδοση αναφοράς είναι το **Simple Newsletter 1.3.0**. Από την έκδοση 1.3.0 του bridge, διαφορετική ή άγνωστη έκδοση και αλλαγμένα hashes εμφανίζουν **μόνο προειδοποιήσεις στη σελίδα του component στο administrator**. Δεν αποκλείουν τη frontend λειτουργία και δεν απαιτείται αποκατάσταση manifest_cache για χρήση του bridge. Το compatibility.json παραμένει σημείο αναφοράς, όχι λίστα επιτρεπόμενων εκδόσεων. Μια προειδοποίηση δεν σημαίνει ότι η νέα έκδοση έχει δοκιμαστεί: απαιτείται επαλήθευση πριν από πραγματικές αποστολές. Παραμένουν υποχρεωτικοί η ενεργή εγκατάσταση, τα απαραίτητα callable model/helper methods, οι απαιτούμενοι πίνακες/στήλες και InnoDB. Πραγματικές ελλείψεις αποκλείουν τη λειτουργία με συγκεκριμένο μήνυμα. Οι ACL, CSRF και ownership έλεγχοι δεν αλλάζουν.
 
 Τα models δημιουργούνται μέσω του bootComponent και του upstream MVCFactory με ρητό Administrator prefix και ignore_request=true, εντός **site application**. Δεν γίνεται dispatch upstream administrator controller. Το AdminModel::save δεν χρησιμοποιείται, επειδή εφαρμόζει upstream ACL για την κατάσταση και administrator model events. Γίνεται ελεγχόμενη αποθήκευση με το upstream MVCFactory table, allowlist fields και bridge ACL. Τα TemplateModel checkout/checkin, SendModel createJob/processBatch/cancelJob και τα helpers επαναχρησιμοποιούνται όπου ελέγχθηκαν ασφαλή.
 
@@ -175,3 +175,17 @@ docker exec catichisi-local-web-1 php /tmp/newsletterbridge-integration.php /var
 ## License
 
 GPL version 2 or later. Το Simple Newsletter παραμένει ξεχωριστό εγκατεστημένο extension και δεν συμπεριλαμβάνεται στο bridge ZIP.
+
+## Ελληνική ορολογία — 1.2.1
+
+Στην ελληνική διεπαφή χρησιμοποιείται «Ενημερωτικό δελτίο», με τις αντίστοιχες πτώσεις και τον πληθυντικό. Η ονομασία του εξαρτώμενου προϊόντος Simple Newsletter παραμένει ως επίσημη ονομασία.
+
+## Έκδοση 1.3.0 — συμβατότητα και διεπαφή
+
+Η ελληνική ορολογία χρησιμοποιεί «διάταξη» για layout και «πρότυπο» για preset. Ο επιλογέας προτύπων χρησιμοποιεί native select με form-select/inputbox, κληρονομεί τυπογραφία και χρώματα του template και παρέχει προσαρμογή ύψους, περιθωρίων και focus χωρίς εξάρτηση από συγκεκριμένο theme. Τα native overrides παραμένουν διαθέσιμα.
+
+Έλεγχος συμβατότητας: php tests/dependency-unit.php. Οι 15 δοκιμές καλύπτουν warning-only version/hashes και υποχρεωτικά schema/storage/API/enabled/Joomla gates. Δεν πραγματοποιούνται αποστολές.
+
+Στο local Joomla ελέγχθηκαν επίσης 6 πραγματικές περιπτώσεις factory/admin rendering με διαφορετική και κενή cached έκδοση, με υποχρεωτικό rollback. Το tests/dependency-joomla.php απαιτεί το bootstrap /tmp/newsletterbridge-inspect.php και εκτελείται μόνο σε εξουσιοδοτημένο test περιβάλλον.
+
+Το bridge δεν εμφανίζεται στο admin menu Components. Οι ρυθμίσεις παραμένουν διαθέσιμες από τη Γενική Διαμόρφωση του Joomla και οι προειδοποιήσεις συμβατότητας εμφανίζονται εκεί. Η αλλαγή διατηρεί την έκδοση 1.3.0.
