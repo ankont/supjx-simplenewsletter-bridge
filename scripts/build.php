@@ -21,6 +21,7 @@ foreach ($files as $file) {
     $zip->addFile($file, $relative);
 }
 if (is_file($root . '/README.md')) { $zip->addFile($root . '/README.md', 'README.md'); }
+if (is_file($root . '/docs/EMAIL_OUTPUT_PROTOCOL.md')) { $zip->addFile($root . '/docs/EMAIL_OUTPUT_PROTOCOL.md', 'docs/EMAIL_OUTPUT_PROTOCOL.md'); }
 unset($zip);
 // Only obsolete bridge archives in this workspace's dist directory are removed.
 foreach (glob($dist . '/com_newsletterbridge-*.zip') as $old) {

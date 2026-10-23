@@ -5,11 +5,13 @@
  */
 define('_JEXEC', 1);
 define('JPATH_BASE', $argv[1] ?? '/var/www/html');
-$_SERVER['HTTP_HOST']='localhost:8089'; $_SERVER['SERVER_NAME']='localhost'; $_SERVER['REQUEST_URI']='/index.php'; $_SERVER['SCRIPT_NAME']='/index.php';
+$_SERVER['HTTP_HOST']='localhost:8089'; $_SERVER['SERVER_NAME']='localhost'; $_SERVER['REQUEST_URI']='/'; $_SERVER['SCRIPT_NAME']='/index.php';
+$_SERVER['PHP_SELF']='/index.php';
 require JPATH_BASE . '/includes/defines.php'; require JPATH_BASE . '/includes/framework.php';
 $c = \Joomla\CMS\Factory::getContainer();
 $c->alias('session','session.web.site')->alias(\Joomla\Session\SessionInterface::class,'session.web.site');
 $app = $c->get(\Joomla\CMS\Application\SiteApplication::class); \Joomla\CMS\Factory::$application=$app;
+$app->loadIdentity(new \Joomla\CMS\User\User());
 $app->createExtensionNamespaceMap(); (new ReflectionMethod($app,'initialiseApp'))->invoke($app);
 define('JPATH_COMPONENT',JPATH_SITE . '/components/com_newsletterbridge');
 define('JPATH_COMPONENT_ADMINISTRATOR',JPATH_ADMINISTRATOR . '/components/com_newsletterbridge');
@@ -88,14 +90,21 @@ try {
     denied(fn()=>$bridge->checkin($id),409,'second user checkin locked');
     denied(fn()=>$bridge->save($id,['title'=>'No','subject'=>'No','body'=>'<p>No</p>']),409,'second user save locked');
     $user->id=900000001;unset($user->testRights['com_newsletterbridge:core.edit']);
-    $bridge->save($id,['title'=>'Edited','subject'=>'Edited {name}','body'=>'<p>Edited {email}</p>','published'=>1]);
+    $bridge->save($id,['title'=>'Edited','subject'=>'Edited {name}','body'=>'<p>Edited {email}</p><img src="images/news.jpg"><a href="weekly/article.html">Article</a>','published'=>1]);
     check((int)$bridge->item($id)->checked_out===0 && (int)$bridge->item($id)->published===1,'save and upstream checkin');
     $bridge->changeState($id,0); check((int)$bridge->item($id)->published===0,'state endpoint');
     $bridge->changeState($id,1);
+    // The synthetic user's configured HTML filter may strip every tag. Set an
+    // isolated legacy-content fixture to test URLs independently of that policy.
+    $fixture=(object)['id'=>$id,'body'=>'<p>Edited {email}</p><img src="images/news.jpg"><a href="weekly/article.html">Article</a>'];
+    $db->updateObject('#__simplenewsletter_templates',$fixture,'id');
     $presets=$bridge->presets($id); check(count($presets)===6,'all upstream presets');
     denied(fn()=>$bridge->preset($id,'../hero-cta'),404,'preset traversal');
     check(str_contains($bridge->preview($id),'sample@example.invalid'),'sample preview');
     $bridge->test($id,'author@example.invalid'); check(count($mock->messages)===1,'test via mock transport');
+    $siteRoot=\Joomla\CMS\Uri\Uri::root();
+    check(str_contains($mock->messages[0]['body'],'src="'.$siteRoot.'images/news.jpg"'),'test mail absolute image: '.json_encode([$siteRoot,$mock->messages[0]['body']]));
+    check(str_contains($bridge->preview($id),'href="'.$siteRoot.'weekly/article.html"'),'preview absolute article link');
     check(!str_contains($mock->messages[0]['body'],'token='),'test no subscriber token');
     // Artificial subscribers exist ONLY in the isolated empty test tables.
     foreach ([1,2,3] as $n) { $row=(object)['name'=>'Sample '.$n,'email'=>'sample'.$n.'@example.invalid','state'=>1,'token'=>str_repeat((string)$n,48)]; $db->insertObject('#__simplenewsletter_subscribers',$row,'id'); }
@@ -108,8 +117,13 @@ try {
     try {denied(fn()=>$bridge->process($job['jobId']),409,'concurrent worker lock');check(count($mock->messages)===$mailBefore,'busy worker never mails');}
     finally {$second->setQuery('SELECT RELEASE_LOCK('.$second->quote($lockName).')')->loadResult();}
     $job=$bridge->process($job['jobId']); check($job['sent']===1 && !$job['done'],'first batch');
+    check(str_contains($mock->messages[1]['body'],'src="'.$siteRoot.'images/news.jpg"'),'real upstream batch mock captures absolute image');
+    // Emulate an older, partially sent job with a relative URL in its snapshot.
+    $fixture=(object)['id'=>$job['jobId'],'body'=>'<img src="images/older.jpg">'];
+    $db->updateObject('#__simplenewsletter_jobs',$fixture,'id');
     $db->setQuery('UPDATE #__simplenewsletter_jobs SET sent=0 WHERE id='.(int)$job['jobId'])->execute();
     $job=$bridge->process($job['jobId']); check($job['sent']===2 && !$job['done'],'resume recovers interrupted counters');
+    check(str_contains($mock->messages[2]['body'],'src="'.$siteRoot.'images/older.jpg"'),'resume uses original snapshot with absolute URL, not edited template');
     check(\Joomla\CMS\Component\ComponentHelper::getParams('com_simplenewsletter')->get('queue_retention')===30,'retention restored after batches');
     $job=$bridge->cancel($job['jobId']); check($job['state']===3 && $job['done'],'cancel');
     $before=count($mock->messages); $bridge->process($job['jobId']); check(count($mock->messages)===$before,'cancelled job never sends');
@@ -173,6 +187,7 @@ try {
     check($model->validate($form,['title'=>'Form','subject'=>'Form','body'=>'<p>Body</p>','published'=>1])!==false,'native form validation');
     unset($user->testRights['com_newsletterbridge:core.edit.state']);
     $form=$model->getForm([],false); check($form->getField('published')===false,'state field removed by ACL');
+    if (in_array('--email-providers', $argv, true)) { require __DIR__ . '/email-provider-joomla-cases.php'; }
     echo 'PASS: '.$checks.' Joomla '.(new \Joomla\CMS\Version())->getShortVersion().' integration assertions; '.count($mock->messages).' messages captured in memory; zero real mail.'.PHP_EOL;
 } finally {
     $bridgeParams->set('preset_category',$priorPresetCategory);

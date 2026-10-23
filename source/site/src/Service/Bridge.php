@@ -163,7 +163,8 @@ final class Bridge
     {
         $item = $this->item($id);
         // Generic data only, and no working confirm/unsubscribe tokens.
-        return NewsletterHelper::replaceTags((string) $item->body, ['name' => 'Sample', 'email' => 'sample@example.invalid', 'token' => '']);
+        $body = EmailPreparation::render((string) $item->body, 'preview');
+        return EmailUrls::html(NewsletterHelper::replaceTags($body, ['name' => 'Sample', 'email' => 'sample@example.invalid', 'token' => '']));
     }
     public function test(int $id, string $email): void
     {
@@ -179,6 +180,7 @@ final class Bridge
         [$from, $name] = NewsletterHelper::getSender();
         if (!filter_var($from, FILTER_VALIDATE_EMAIL)) { throw new \RuntimeException('COM_NEWSLETTERBRIDGE_MAIL_DISABLED', 503); }
         $sample = ['name' => 'Sample', 'email' => 'sample@example.invalid', 'token' => ''];
+        $body = EmailPreparation::render((string) $item->body, 'test');
         $mailer = Factory::getContainer()->get(MailerFactoryInterface::class)->createMailer();
         $mailer->setSender([$from, $name]);
         $reply = NewsletterHelper::getReplyTo();
@@ -186,7 +188,7 @@ final class Bridge
         $mailer->addRecipient($email);
         $mailer->setSubject('[TEST] ' . NewsletterHelper::replaceTags($item->subject, $sample));
         $mailer->isHtml(true);
-        $mailer->setBody(NewsletterHelper::replaceTags($item->body, $sample));
+        $mailer->setBody(EmailUrls::html(NewsletterHelper::replaceTags($body, $sample)));
         if ($mailer->Send() !== true) { throw new \RuntimeException('COM_NEWSLETTERBRIDGE_SEND_FAILED', 500); }
     }
     private function mailEnabled(): void
@@ -209,7 +211,12 @@ final class Bridge
                 $q = $db->getQuery(true)->select($db->quoteName('id'))->from($db->quoteName('#__simplenewsletter_jobs'))
                     ->where($db->quoteName('template_id') . ' = ' . $id)->whereIn($db->quoteName('state'), [0, 1]);
                 if ($db->setQuery($q)->loadResult()) { throw new \RuntimeException('COM_NEWSLETTERBRIDGE_ACTIVE_JOB', 409); }
+                // Render once, before creating the queue. Every recipient receives
+                // this snapshot, even when articles change between batches.
+                $body = EmailUrls::html(EmailPreparation::render((string) $item->body, 'send'));
                 $job = $this->sender()->createJob($id);
+                $snapshot = (object) ['id' => (int) $job->id, 'body' => $body];
+                $db->updateObject('#__simplenewsletter_jobs', $snapshot, 'id');
                 return $this->progress($job);
             });
         });
@@ -255,6 +262,22 @@ final class Bridge
         }
         return $job;
     }
+    private function normaliseJobBody(int $id): void
+    {
+        // Called only after job ACL checks, under the bridge send lock. Keep the
+        // job snapshot: never replace its content with a subsequently edited template.
+        $q = $this->db->getQuery(true)->select($this->db->quoteName('body'))
+            ->from($this->db->quoteName('#__simplenewsletter_jobs'))
+            ->where($this->db->quoteName('id') . ' = ' . $id);
+        $row = $this->db->setQuery($q)->loadObject();
+        if (!$row || !isset($row->body)) { return; }
+        EmailPreparation::assertPrepared((string) $row->body, true);
+        $body = EmailUrls::html((string) $row->body);
+        if ($body !== $row->body) {
+            $update = (object) ['id' => $id, 'body' => $body];
+            $this->db->updateObject('#__simplenewsletter_jobs', $update, 'id');
+        }
+    }
     public function process(int $id): array
     {
         $this->job($id);
@@ -264,6 +287,7 @@ final class Bridge
             if (in_array((int) $job->state, [2, 3], true)) { return $this->progress($job); }
             if (!in_array((int) $job->state, [0, 1], true)) { throw new \RuntimeException('COM_NEWSLETTERBRIDGE_INVALID', 409); }
             $this->reconcile($job);
+            $this->normaliseJobBody($id);
             // Bound request duration: upstream throttle can otherwise take 400 seconds.
             $params = ComponentHelper::getParams('com_simplenewsletter');
             $throttle = max(0, (int) $params->get('throttle', 0));

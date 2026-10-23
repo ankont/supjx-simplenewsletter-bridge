@@ -2,6 +2,6 @@
 <form><fieldset name="newsletter">
   <field name="title" type="text" label="COM_NEWSLETTERBRIDGE_TITLE" required="true" maxlength="255" filter="string" />
   <field name="subject" type="text" label="COM_NEWSLETTERBRIDGE_SUBJECT" required="true" maxlength="255" filter="string" />
-  <field name="body" type="editor" label="COM_NEWSLETTERBRIDGE_BODY" required="true" filter="Joomla\CMS\Component\ComponentHelper::filterText" buttons="false" height="500" />
+  <field name="body" type="editor" label="COM_NEWSLETTERBRIDGE_BODY" required="true" filter="Joomla\CMS\Component\ComponentHelper::filterText" buttons="true" hide="pagebreak,readmore" height="500" />
   <field name="published" type="list" label="JSTATUS" default="0" validate="options" filter="integer"><option value="0">JUNPUBLISHED</option><option value="1">JPUBLISHED</option></field>
 </fieldset></form>

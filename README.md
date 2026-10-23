@@ -1,191 +1,216 @@
-# Simple Newsletter Frontend Bridge — com_newsletterbridge
+# Simple Newsletter Frontend Bridge
 
-Ανεξάρτητο Joomla component για διαχείριση newsletter από το frontend, χωρίς πρόσβαση στο administrator. Έκδοση **1.3.0**, creationDate **2026-10-08**. Δεν τροποποιεί το Simple Newsletter και δεν εξαρτάται από SmartBrowser, Catichisi ή συγκεκριμένο template.
+**Manage Joomla newsletters from the frontend, without giving authors access to the administrator.**
 
-## Εγκατάσταση και menu item
+Simple Newsletter Frontend Bridge (`com_newsletterbridge`) is an independent Joomla component that adds a permission-controlled authoring and sending workspace to **Simple Newsletter**.
 
-1. Εγκαταστήστε και ενεργοποιήστε το παρεχόμενο **Simple Newsletter 1.3.0**.
-2. Εγκαταστήστε το [dist/com_newsletterbridge-1.3.0.zip](dist/com_newsletterbridge-1.3.0.zip) από **System → Install → Extensions**. Το manifest είναι στη ρίζα του ZIP.
-3. Στο **System → Global Configuration → Newsletter Bridge**, ορίστε τον editor και τα δικαιώματα. Προεπιλογή είναι ο native **TinyMCE**, ανεξάρτητα από τον global editor. Άλλος editor πρέπει να επιτρέπει frontend authoring και να υποστηρίζει το Joomla editor API. Υπάρχει fallback στον editor None αν ο επιλεγμένος δεν είναι ενεργός.
-4. Δημιουργήστε frontend στοιχείο μενού τύπου **Simple Newsletter Frontend Bridge → Newsletter management / Διαχείριση newsletter**. Περιορίστε το Access Level σε Registered ή σε κατάλληλο δικό σας View Level. Το menu access δεν αντικαθιστά το component ACL.
-5. Χρησιμοποιήστε το frontend menu για λίστα, δημιουργία, επεξεργασία, προεπισκόπηση και αποστολές. Αποθηκεύστε πριν από προεπισκόπηση ή αποστολή.
+Current version: **1.4.0**. English and Greek interface translations are included.
 
-Στο εξουσιοδοτημένο local Joomla **http://localhost:8089/** έχει εγκατασταθεί το bridge και έχει δημιουργηθεί native Registered menu item **Newsletter management**, Itemid **219**. Η διαδρομή του είναι **/newsletter-management.html**. Η νέα δημόσια σελίδα **Newsletter**, Itemid **224**, βρίσκεται στο **/newsletters.html** με Public access. Τα προσωρινά test users, ACL grants, newsletters και template override αφαιρέθηκαν μετά τις δοκιμές. Ορίστε τα πραγματικά ACL της ομάδας σας από τις Επιλογές· δεν δόθηκαν μόνιμα νέα δικαιώματα σε υπάρχουσες ομάδες.
+## What is Simple Newsletter?
 
-Η απεγκατάσταση του bridge δεν διαγράφει newsletters, jobs ή subscribers του Simple Newsletter. Το bridge διατηρεί δημόσιες εκδόσεις στον πίνακα #__newsletterbridge_archive και subject/name metadata των article presets στον #__newsletterbridge_presets. Αυτοί οι πίνακες διαγράφονται στην απεγκατάσταση. Τα Joomla άρθρα και η κατηγορία των presets παραμένουν. Οι πίνακες του Simple Newsletter δεν αλλάζουν από την εγκατάσταση/αναβάθμιση.
+**Simple Newsletter** is a separate Joomla extension by **SaintArt Designs**. Its package contains the `com_simplenewsletter` component and a subscription module. It provides subscriber registration and confirmation, newsletter templates, test messages, batch sending and delivery history. It also has a frontend subscription view; subscription is not limited to the module.
 
-## Δημόσια εγγραφή και αρχείο (1.1.0)
+The bridge uses Simple Newsletter's newsletter records, subscribers and send jobs, reusing its Joomla models and helpers where appropriate. It adds frontend management, resource-level permissions, article-based presets and an optional public archive.
 
-Το Simple Newsletter 1.3.0 διαθέτει ήδη frontend menu item εγγραφής, εκτός από module. Το bridge προσθέτει συνδυαστική σελίδα **Εγγραφή και αρχείο newsletter / Newsletter subscription and archive**. Δημιουργήστε αυτό το menu item με Access **Public**. Η φόρμα διατηρεί CSRF, honeypot, optional name και την υπάρχουσα ροή επιβεβαίωσης του Simple Newsletter. Υποβολή της φόρμας μπορεί να στείλει πραγματικό email επιβεβαίωσης.
+**The bridge does not replace Simple Newsletter and cannot run without it.** It does not modify Simple Newsletter's source files. Simple Newsletter is not bundled in the bridge installation ZIP. The separate [reference package](reference/pkg_simplenewsletter-1.3.0.zip) is the compatibility baseline.
 
-Από τη διαχείριση newsletter επιλέξτε **Δημόσιο αρχείο**. Απαιτείται το νέο δικαίωμα **newsletterbridge.archive** μαζί με edit/edit.own. Ο ιδιοκτήτης του newsletter μπορεί να εγκρίνει την έκδοση ακόμη και αν άλλος εξουσιοδοτημένος χρήστης έκανε την αποστολή. Τα send/process/resume/cancel διατηρούν τους ανεξάρτητους αυστηρότερους ελέγχους τους.
+## Features
 
-Κάθε ολοκληρωμένο job (state=2, sent>0) έχει χωριστή έκδοση, αρχικά ιδιωτική. Το αρχικό κείμενο προέρχεται από το snapshot του job και όχι από τυχόν μεταγενέστερη αλλαγή του template. Επεξεργαστείτε τη δημόσια έκδοση με τον Joomla editor, αποθηκεύστε ιδιωτικά για ενημέρωση της προεπισκόπησης και δημοσιεύστε μόνο αφού επιβεβαιώσετε τον έλεγχο προσωπικών δεδομένων. Η ιδιωτική αποθήκευση αποσύρει τυχόν ήδη δημόσια έκδοση. Η απόσυρση δεν ανακαλεί αντίγραφα που έχουν ήδη διαβάσει ή αποθηκεύσει επισκέπτες.
+- Paginated newsletter list with search and ownership-based access.
+- Create and edit with a Joomla editor and available editor buttons.
+- One preset selector combining built-in designs with reusable Joomla articles.
+- Preview saved content and send sample-only test messages to a specified address.
+- Start, pause, resume and cancel batch sends, with progress and delivery totals.
+- Public subscription page and an author-approved archive of previous issues.
+- Optional email-output providers for extensions that insert special content tokens.
+- Native Joomla template overrides, without requiring a particular site template or frontend framework.
 
-Η δημόσια έκδοση δεν διαβάζει ποτέ subscribers ή recipient queue. Το {name} γίνεται γενικό όνομα συνδρομητή, email διευθύνσεις αντικαθίστανται και τα υπόλοιπα placeholders αφαιρούνται. Σύνδεσμοι με query/fragment, unsubscribe/confirm/token ή credentials, remote εικόνες, tracking pixels και ενεργό HTML αφαιρούνται. Διατηρούνται ασφαλείς βασικές διατάξεις και τοπικές στατικές εικόνες. Αυτό μπορεί να αλλάξει την εμφάνιση του email ή να αφαιρέσει νόμιμους συνδέσμους.
+Subscriber administration remains in Simple Newsletter. Frontend authors are not given subscriber lists, recipient queues, confirmation/unsubscribe tokens or SMTP credentials.
 
-**Δεν υπάρχει πλήρης αυτόματη ανωνυμοποίηση ελεύθερου κειμένου ή εικόνων.** Ονόματα, τηλέφωνα, διευθύνσεις, εξατομικευμένα URL paths και στοιχεία μέσα σε εικόνες χρειάζονται έλεγχο του author. Η έγκριση δεν προεπιλέγεται. Ταυτόχρονες αλλαγές ανιχνεύονται με revision και transaction/row lock· ένα παλιό browser tab δεν μπορεί να υπερκαλύψει νεότερη έκδοση. Το αρχείο κρύβει αυτόματα εκδόσεις των οποίων το upstream job/template διαγράφηκε ή το job έπαψε να είναι ολοκληρωμένο.
+## Requirements and compatibility
 
-## ACL
-
-Οι παρακάτω ενέργειες διαχείρισης ελέγχονται στον server. Οι δημόσιες σελίδες εγγραφής/αρχείου δεν απαιτούν login. Απαιτείται συνδεδεμένος χρήστης και **newsletterbridge.access** στο **com_newsletterbridge**.
-
-| Δικαίωμα | Συμπεριφορά |
+| Dependency | Requirement |
 | --- | --- |
-| newsletterbridge.access | Είσοδος στην περιοχή frontend. Από μόνο του δεν δίνει πρόσβαση σε περιεχόμενο άλλων χρηστών. |
-| core.create | Δημιουργία νέων newsletter. Ο owner ορίζεται από τον server. |
-| core.edit | Ανάγνωση και επεξεργασία όλων των newsletter. |
-| core.edit.own | Ανάγνωση και επεξεργασία μόνο newsletter με created_by ίσο με τον τρέχοντα χρήστη. |
-| core.edit.state | Αλλαγή published/unpublished, επιπλέον του δικαιώματος επεξεργασίας του συγκεκριμένου newsletter. |
-| newsletterbridge.send | Test email, δημιουργία και διαχείριση jobs για newsletter στα οποία ο χρήστης έχει πρόσβαση. |
-| simplenewsletter.send στο com_simplenewsletter | **Επιπλέον υποχρεωτικό** δικαίωμα για κάθε ενέργεια αποστολής και πρόσβαση σε jobs. |
-| newsletterbridge.archive | Έλεγχος, ιδιωτική αποθήκευση, δημοσίευση και απόσυρση δημόσιων εκδόσεων, επιπλέον του edit/edit.own για το συγκεκριμένο newsletter. Δεν δίνει δικαίωμα αποστολής. |
-| core.manage / core.options | Μόνο πρόσβαση στη σελίδα ρυθμίσεων του bridge στο administrator. Δεν απαιτούνται για frontend χρήση. |
+| Joomla | 5.4.x or 6.x. The current integration suite has run on 6.2.0; Joomla 5.4 has not been functionally verified. |
+| PHP | A PHP version and extensions supported by the installed Joomla release. |
+| Database | MySQL/MariaDB, InnoDB for the required tables, and `GET_LOCK` / `RELEASE_LOCK` support. |
+| Simple Newsletter | Installed and enabled. Version 1.3.0 is the reference implementation. |
+| Email transport | Joomla's configured mail transport and a valid sender configuration. |
 
-Η αποθήκευση article preset απαιτεί επίσης **core.create** στην επιλεγμένη **com_content.category.ID** για νέο άρθρο ή **core.edit/core.edit.own** στο υπάρχον **com_content.article.ID** για αντικατάσταση. Τα send grants δεν απαιτούνται.
+Different or unknown Simple Newsletter versions, and reference-file hash differences, produce an administrator warning rather than automatic rejection. Missing required APIs, schema, storage support or an enabled dependency still prevent operation. A warning does not certify an untested upstream release or its administrator interface.
 
-Προτεινόμενη ομάδα author: access, create, edit.own. Προτεινόμενη ομάδα publisher: τα προηγούμενα και edit.state. Προτεινόμενη ομάδα sender: δικαιώματα πρόσβασης στο newsletter και τα **δύο** send grants. Το bridge δεν απαιτεί core.manage στο com_simplenewsletter.
+## Installation and setup
 
-Χωρίς edit.own ή edit, ένας δημιουργός μπορεί να δημιουργήσει αλλά δεν μπορεί να ξανανοίξει τα αποθηκευμένα του newsletter. Τα αρχικά upstream templates με created_by=0 είναι προσβάσιμα μόνο με edit όλων. Δεν υπάρχει χωριστό read-all: η ανάγνωση ακολουθεί το scope επεξεργασίας.
+1. Install and enable Simple Newsletter. Configure Joomla mail settings and the sender settings in Simple Newsletter.
+2. Install [com_newsletterbridge-1.4.0.zip](dist/com_newsletterbridge-1.4.0.zip) through **System → Install → Extensions**.
+3. Open **System → Global Configuration** and select **Newsletter Bridge**. Configure the editor, optional preset category and permissions. The bridge intentionally has no entry in the administrator Components menu.
+4. Create a menu item of type **Simple Newsletter Frontend Bridge → Newsletter management**. Choose an appropriate access level, such as Registered or a dedicated author view level.
+5. Grant the component permissions below. Menu access alone does not grant permission to manage newsletters.
+6. Sign in through the frontend and open the new menu item. Save changes before previewing or sending.
 
-Τα jobs ελέγχονται ως προς το newsletter **και** τον δημιουργό του job. Ένας χρήστης με edit.own διαχειρίζεται μόνο δικά του jobs πάνω σε δικά του newsletters. Ένας χρήστης με core.edit και τα δύο send grants μπορεί να διαχειριστεί jobs άλλων δημιουργών. Η πολιτική επανελέγχεται για status, process, resume και cancel, ακόμη και αν τα δικαιώματα άλλαξαν μετά την έναρξη.
+New newsletters start unpublished. Normal delivery requires publication and explicit confirmation of sending to all confirmed subscribers. Preview and test messages are available for unpublished newsletters within the user's permissions.
 
-Δεν διατίθενται endpoints subscribers, tokens, recipient details, queue errors ή SMTP credentials. Τα status payloads περιέχουν μόνο IDs, κατάσταση και αριθμητικά totals. Τα σφάλματα προς τον author είναι γενικά μηνύματα, χωρίς raw database ή mailer exceptions.
+## Permissions
 
-## Editor, presets και προεπισκόπηση
+Management requires a signed-in user and `newsletterbridge.access` on `com_newsletterbridge`. Checks run on the server for each action and resource.
 
-Τα newsletters αντιστοιχούν στον πίνακα templates του Simple Newsletter. Ο ενιαίος επιλογέας περιλαμβάνει τις έξι έτοιμες διατάξεις και τα προσβάσιμα άρθρα της κατηγορίας presets. Δεν εμφανίζονται ξεχωριστές ομάδες ή ενδείξεις προέλευσης. Η εφαρμογή preset αντικαθιστά περιεχόμενο και θέμα μετά από επιβεβαίωση, χωρίς αυτόματη αποθήκευση του newsletter.
+| Permission | Allows |
+| --- | --- |
+| `newsletterbridge.access` | Enter frontend management; does not grant access to other authors' content. |
+| `core.create` | Create newsletters; the server assigns ownership. |
+| `core.edit` | Read and edit all newsletters. |
+| `core.edit.own` | Read and edit newsletters owned by the current user. |
+| `core.edit.state` | Change publication state, together with permission to edit that newsletter. |
+| `newsletterbridge.send` | Test messages and send-job operations within the user's resource scope. |
+| `simplenewsletter.send` on **`com_simplenewsletter`** | Additional mandatory permission for sending and access to jobs. |
+| `newsletterbridge.archive` | Review, publish and withdraw archive editions, together with newsletter edit permission. |
 
-### Article presets (1.2.0)
+A typical author needs access, create and edit-own. Publishers also need edit-state. Senders need access to the relevant newsletters **and both send permissions**. Administrator configuration permissions are not required for frontend authors.
 
-Στις **Options → Frontend → Κατηγορία προτύπων ενημερωτικών δελτίων** επιλέξτε μια ειδική κατηγορία άρθρων. Η προεπιλογή **Καμία** διατηρεί μόνο τα έτοιμα presets και απενεργοποιεί την αποθήκευση δικών σας. Δεν δημιουργείται κατηγορία ούτε μετακινούνται υπάρχοντα άρθρα αυτόματα. Μπορείτε να χρησιμοποιήσετε αδημοσίευτη κατηγορία με κατάλληλο View Level. Για αδημοσίευτη κατηγορία απαιτείται σχετικό create/edit/edit.own δικαίωμα κατηγορίας.
+Reading follows edit scope; there is no separate read-all permission. A creator without edit/edit-own cannot reopen saved newsletters. Upstream records with no owner require edit-all access.
 
-Στον newsletter editor εφαρμόστε ένα preset, κάντε τις αλλαγές και πατήστε **Αποθήκευση ως πρότυπο**. Αποθηκεύονται το τρέχον περιεχόμενο του editor και το θέμα, ακόμη και πριν αποθηκευτεί το newsletter. Το πεδίο **Όνομα προτύπου** συμπληρώνεται όταν εφαρμόζετε ένα preset.
+Status, process, resume and cancel check both newsletter access and job ownership. An edit-own sender can manage only their own jobs for their own newsletters. An edit-all sender can manage other creators' jobs.
 
-- Ίδιο όνομα με έτοιμο preset: η δική σας έκδοση το αντικαθιστά στον επιλογέα, χωρίς αλλαγή στα αρχεία του Simple Newsletter και χωρίς δεύτερη επιλογή.
-- Ίδιο όνομα με ήδη αποθηκευμένο άρθρο: ενημερώνεται εκείνο το άρθρο, μόνο αν επιτρέπεται η επεξεργασία του. Δεν αλλάζουν owner, κατηγορία, access, state ή λοιπά metadata του υπάρχοντος άρθρου.
-- Διαφορετικό όνομα: δημιουργείται νέο, αδημοσίευτο άρθρο με Access της κατηγορίας ή Registered αν η κατηγορία είναι Public.
-- Η αντιστοίχιση αγνοεί πεζά/κεφαλαία και περιττά κενά. Τα ελληνικά/αγγλικά ονόματα των έτοιμων presets αντιστοιχούν στο ίδιο preset. Η δημιουργία duplicate articles με αντίστοιχα ονόματα εκτός bridge εμποδίζει αντικατάσταση μέχρι να διορθωθεί η ασάφεια.
-- Trash, archive, μετακίνηση σε άλλη κατηγορία ή μετονομασία ενός override επαναφέρει το αρχικό preset. Η μετονομασία σε άλλο αναγνωρισμένο όνομα μπορεί να αντικαταστήσει εκείνο το preset.
+## Editor and reusable presets
 
-Η ανάγνωση ελέγχει category/article View Levels. Αδημοσίευτα άρθρα εμφανίζονται μόνο σε χρήστες που μπορούν να τα επεξεργαστούν, εντός του δικού τους ownership scope. Δημοσιευμένα άρθρα με κατάλληλο Access μπορούν να χρησιμοποιούνται ως κοινά presets· η αντικατάσταση εξακολουθεί να απαιτεί edit δικαίωμα. Οι μη προσβάσιμες εκδόσεις δεν αποκαλύπτονται σε άλλους authors.
+The configured editor defaults to TinyMCE. Other editors must support frontend use and Joomla's editor API. Joomla text filters and editor HTML rules still apply. Editor buttons are enabled, excluding pagebreak and readmore; available buttons depend on installed plugins and permissions.
 
-Για άρθρα που δημιουργήθηκαν από το bridge, το θέμα φυλάσσεται χωριστά στον δικό του πίνακα, ώστε μια κανονική Joomla επεξεργασία άρθρου να το διατηρεί. Για προϋπάρχον άρθρο χωρίς τέτοια metadata χρησιμοποιείται ο τίτλος του ως θέμα. Το περιεχόμενο είναι introtext + fulltext, χωρίς content-plugin rendering. Τα newsletter placeholders διατηρούνται.
+Choose a dedicated Joomla article category in the bridge settings to enable custom presets. The selector combines accessible articles with the six built-in Simple Newsletter presets:
 
-Το ArticleModel δημιουργείται μέσω του com_content MVCFactory μέσα στο site application. Διατηρούνται native assets, workflow associations, content events και history. Δεν ζητείται workflow transition ή δημοσίευση από το bridge. Αν το άρθρο είναι checked out, η αντικατάσταση απορρίπτεται ακόμη και για τον ίδιο χρήστη σε άλλη καρτέλα. Connection-scoped category lock συντονίζει τις αποθηκεύσεις του bridge. Επειδή οι native nested asset operations μπορεί να προκαλέσουν implicit commits, η αποτυχία save αποκαθιστά το προηγούμενο content/subject και checkout ή αφαιρεί τη νέα μερική εγγραφή. Τα κανονικά Joomla content plugins εξακολουθούν να εκτελούνται· δεν δίνεται εγγύηση ανάκλησης εξωτερικών side effects τρίτων plugins.
+- A new name creates a reusable preset article.
+- The same name as a built-in preset replaces it in the selector without changing upstream files.
+- The same name as an existing article preset updates that article, if permitted.
 
-Το body φιλτράρεται από τα Joomla Text Filters για τις ομάδες του χρήστη. Οι editors μπορεί επίσης να αφαιρέσουν inline styles, πίνακες ή ολόκληρο HTML document. Δεν παρακάμπτονται τα φίλτρα για διατήρηση ενός layout. Ελέγξτε το αποτέλεσμα της αποθήκευσης και το test email πριν από κανονική αποστολή. Τα editor extension buttons είναι απενεργοποιημένα, ώστε το bridge να μην απαιτεί διαχειριστές media ή άλλα extensions.
+Matching ignores case and redundant whitespace and recognises English/Greek built-in names. Preset articles retain Joomla access, ownership and checkout controls. Creating or replacing one also requires the corresponding `com_content` category/article permissions. Preset subjects are stored separately from article text.
 
-Η προεπισκόπηση χρησιμοποιεί **αποθηκευμένο** περιεχόμενο και γενικά sample data. Εμφανίζεται σε frontend srcdoc iframe με άδειο sandbox και CSP, χωρίς scripts, forms ή navigation. Δεν φορτώνει administrator page. Οι εξωτερικές εικόνες μπορούν να φορτωθούν· η εμφάνιση σε πραγματικούς mail clients ενδέχεται να διαφέρει.
+An editor button that inserts extension tokens does not automatically make them render in email. See [Email-output extensions](#email-output-extensions).
 
-Το δοκιμαστικό email απαιτεί και τα δύο send grants. Χρησιμοποιεί πραγματικές ρυθμίσεις αποστολέα, αλλά μόνο sample name/email και κενό token. Δεν καλεί το upstream sendTest, το οποίο διαβάζει πραγματικό όνομα και token όταν η διεύθυνση είναι εγγεγραμμένη. Αποδέκτης του test είναι μόνο η διεύθυνση που συμπληρώθηκε στη φόρμα, χωρίς lookup της λίστας συνδρομητών.
+## Preview and delivery
 
-Τα νέα newsletters ξεκινούν αδημοσίευτα. Απαιτείται published=1 για κανονική αποστολή. Το test και η προεπισκόπηση επιτρέπονται και σε αδημοσίευτα, εντός των αντίστοιχων ACL.
+Preview uses saved content, generic sample values and a sandboxed frontend document. A test message goes only to the entered address, with sample name/email values and no subscriber token. It does not look up the recipient's subscriber record.
 
-## Jobs, batching και όρια αξιοπιστίας
+Relative image/link URLs are converted to absolute site URLs. Images must remain publicly reachable. Email clients can block remote images or render HTML differently from browsers.
 
-Η δημιουργία job απαιτεί ρητή επιβεβαίωση αποστολής σε όλους τους confirmed subscribers. Το upstream createJob κάνει snapshot subject/body και δημιουργεί queue. Μπορεί επίσης να συμπληρώσει κενά subscriber tokens: αυτό γίνεται μόνο κατά την εξουσιοδοτημένη έναρξη κανονικής αποστολής, ποτέ κατά την επιθεώρηση ή το άνοιγμα σελίδων.
+Normal sending creates a content snapshot and recipient queue through Simple Newsletter. The browser processes batches sequentially while the send page is active. Pause or leaving the page stops further batches after the current request. Resume continues pending recipients. Cancel does not recall delivered messages, and failed recipients are not automatically retried.
 
-Η δημιουργία job εκτελείται σε InnoDB transaction. Ενεργό job για το ίδιο newsletter εμποδίζει νέα έναρξη. Connection-scoped MySQL/MariaDB named lock συντονίζει start/process/resume/cancel ανάμεσα σε bridge sessions και workers. Η δημιουργία και επεξεργασία χρησιμοποιούν row locks και το πραγματικό checkout/checkin του upstream TemplateModel.
+Delivery limitations:
 
-Ο browser εκτελεί τις παρτίδες σειριακά. Οι παρτίδες περιορίζονται σε έως 25 recipients και λαμβάνεται υπόψη το upstream throttle. Το κουμπί Pause ή το κλείσιμο της σελίδας διακόπτει μετά την τρέχουσα παρτίδα. Το Resume συνεχίζει μόνο pending queue rows. Το Cancel είναι τελικό και δεν ανακαλεί ήδη σταλμένα μηνύματα. Finished/cancelled jobs δεν υποβάλλονται ξανά σε processBatch. Δεν γίνονται αυτόματα retries σε HTTP failures ή αποτυχημένους recipients.
+- There is no background scheduler or exactly-once guarantee. A crash after submission but before recording queue state can cause duplicates on resume.
+- Do not process the same job simultaneously through the bridge and Simple Newsletter's administrator; the upstream interface does not share the bridge's concurrency lock.
+- The reference sender snapshots confirmed recipients at job creation and does not recheck subscription changes between batches.
+- A recorded send means submission to the mail transport, not guaranteed inbox delivery. SMTP, SPF, DKIM and DMARC configuration belong to the site's mail infrastructure.
 
-Τα καταγεγραμμένα aggregate queue states χρησιμοποιούνται για ανάκτηση sent/failed counters μετά από διακοπή worker, όταν η ουρά παραμένει πλήρης. Το bridge καταστέλλει την αυτόματη **global** εκκαθάριση παλαιών queues που κάνει το upstream finish(): αλλάζει μόνο το in-memory queue_retention κατά το process call και το επαναφέρει σε finally. Δεν αλλάζει αποθηκευμένες ρυθμίσεις ή ξένα παλαιά jobs.
+## Public subscription and archive
 
-Υπάρχουν περιορισμοί του αμετάβλητου upstream sender:
+Create a second menu item of type **Newsletter subscription and archive**, with Public access, to combine subscription and previous issues on one page. Subscription uses Simple Newsletter's confirmation workflow and may send a confirmation email.
 
-- Δεν υπάρχει εγγύηση exactly-once. Διακοπή μετά την παράδοση email αλλά πριν από καταγραφή queue state μπορεί να οδηγήσει σε διπλό μήνυμα κατά το resume. Ελέγξτε πριν συνεχίσετε μετά από σοβαρό crash.
-- Μην επεξεργάζεστε το ίδιο job ταυτόχρονα από το administrator του Simple Newsletter και το bridge. Τα upstream administrator endpoints δεν συμμετέχουν στο bridge lock.
-- Το recipient snapshot δεν επανελέγχει unsubscribe/state αλλαγές μεταξύ παρτίδων. Η πολιτική αυτή ανήκει στο Simple Newsletter 1.3.0.
-- Η επιστροφή του upstream mailer καταγράφεται ως sent όταν δεν υπάρξει exception· αυτό δεν εγγυάται τελική παράδοση ή αποδοχή από το inbox.
-- Η διαγραφή ή εκκαθάριση ουρών από administrator επηρεάζει τη δυνατότητα resume. Το bridge δεν προσφέρει αλλαγή παραληπτών, επανάληψη failed rows ή background scheduler.
+Sent newsletters are **not published automatically**. An authorised author can create a public edition from a completed send job, edit it, review it and explicitly approve publication. Editions start private and use the job snapshot, not later newsletter edits. Private saving withdraws an already published edition.
 
-## Συμβατότητα
+The archive does not read subscriber records or recipient queues. Its sanitiser replaces known personal placeholders/email addresses and removes unsafe HTML, personalised links, tracking constructs and remote images. This can change the original appearance.
 
-Στόχος API: Joomla **5.4.x ή 6.x**, PHP υποστηριζόμενη από την αντίστοιχη Joomla έκδοση, MySQL/MariaDB με **InnoDB** και GET_LOCK/RELEASE_LOCK. **Λειτουργικά ελέγχθηκε στο Joomla 6.1.3 του local Docker περιβάλλοντος.** Το Joomla 5.4 δεν δοκιμάστηκε λειτουργικά σε αυτή τη συνεδρία.
+**Authors must still review free text and images for personal information.** Sanitisation is not complete anonymisation. Withdrawal cannot recall copies already obtained by visitors.
 
-Ελεγμένη έκδοση αναφοράς είναι το **Simple Newsletter 1.3.0**. Από την έκδοση 1.3.0 του bridge, διαφορετική ή άγνωστη έκδοση και αλλαγμένα hashes εμφανίζουν **μόνο προειδοποιήσεις στη σελίδα του component στο administrator**. Δεν αποκλείουν τη frontend λειτουργία και δεν απαιτείται αποκατάσταση manifest_cache για χρήση του bridge. Το compatibility.json παραμένει σημείο αναφοράς, όχι λίστα επιτρεπόμενων εκδόσεων. Μια προειδοποίηση δεν σημαίνει ότι η νέα έκδοση έχει δοκιμαστεί: απαιτείται επαλήθευση πριν από πραγματικές αποστολές. Παραμένουν υποχρεωτικοί η ενεργή εγκατάσταση, τα απαραίτητα callable model/helper methods, οι απαιτούμενοι πίνακες/στήλες και InnoDB. Πραγματικές ελλείψεις αποκλείουν τη λειτουργία με συγκεκριμένο μήνυμα. Οι ACL, CSRF και ownership έλεγχοι δεν αλλάζουν.
+## Email-output extensions
 
-Τα models δημιουργούνται μέσω του bootComponent και του upstream MVCFactory με ρητό Administrator prefix και ignore_request=true, εντός **site application**. Δεν γίνεται dispatch upstream administrator controller. Το AdminModel::save δεν χρησιμοποιείται, επειδή εφαρμόζει upstream ACL για την κατάσταση και administrator model events. Γίνεται ελεγχόμενη αποθήκευση με το upstream MVCFactory table, allowlist fields και bridge ACL. Τα TemplateModel checkout/checkin, SendModel createJob/processBatch/cancelJob και τα helpers επαναχρησιμοποιούνται όπου ελέγχθηκαν ασφαλή.
+From 1.4.0, optional Joomla plugins in the **`newsletter`** group handle extension-specific content through **`onNewsletterPrepareEmail`**. Each extension owns its parser, public-content resolution and email layouts. The bridge validates output, normalises URLs and stores the send snapshot.
 
-## Native template overrides
+Providers run only for preview, test and new-send preparation, never per recipient or resumed batch. Ordinary site pages do not trigger this mechanism. Without providers, there is no provider event dispatch or identity switch.
 
-Αντιγράψτε τα αντίστοιχα αρχεία στα παρακάτω paths του template σας:
+See the [email-output protocol](docs/EMAIL_OUTPUT_PROTOCOL.md) for implementation, access policy, budgets and error handling.
 
-- templates/YOUR_TEMPLATE/html/com_newsletterbridge/newsletters/default.php
-- templates/YOUR_TEMPLATE/html/com_newsletterbridge/newsletter/default.php
-- templates/YOUR_TEMPLATE/html/com_newsletterbridge/preview/default.php
-- templates/YOUR_TEMPLATE/html/com_newsletterbridge/send/default.php
-- templates/YOUR_TEMPLATE/html/com_newsletterbridge/archive/default.php
-- templates/YOUR_TEMPLATE/html/com_newsletterbridge/issue/default.php
-- templates/YOUR_TEMPLATE/html/com_newsletterbridge/publications/default.php
-- templates/YOUR_TEMPLATE/html/com_newsletterbridge/publication/default.php
+**Upgrading from 1.3.2:** the bridge's direct Sources renderer was removed in 1.4.0. Sources now requires a compatible email-output provider from that extension; the reference Sources 4.0.3 content plugin alone does not implement the protocol. Unresolved tokens stop preparation instead of being emailed verbatim. Rendered job snapshots remain usable. Older unresolved jobs require cancellation and a review of delivered recipients before a new send.
 
-Η απόδοση γίνεται μέσω Joomla HtmlView και parent::display. Τα data attributes χρησιμοποιούνται από το bridge.js· διατηρήστε τα στα overrides αν θέλετε presets και batch controls. Τα ACL δεν εξαρτώνται από τα layouts. Το component παρέχει scoped CSS χωρίς υπόθεση συγκεκριμένου template ή framework.
+## Template overrides
 
-## Tests και build
+Frontend views use standard Joomla override locations. For example:
 
-Το workspace διαθέτει PHP CLI. Εκτελέστε:
+```text
+components/com_newsletterbridge/tmpl/newsletters/default.php
+    → templates/YOUR_TEMPLATE/html/com_newsletterbridge/newsletters/default.php
+```
 
-~~~text
+Available views: `newsletters`, `newsletter`, `preview`, `send`, `archive`, `issue`, `publications`, `publication`. Preserve JavaScript data attributes and form controls when overriding interactive views. ACL checks are independent of the markup. Email-output providers own and document their own layout override paths.
+
+## Data and uninstall behaviour
+
+The bridge uses Simple Newsletter records and maintains its own tables: `#__newsletterbridge_archive` for public editions and `#__newsletterbridge_presets` for preset metadata.
+
+Uninstalling removes those two tables. It does not remove Simple Newsletter newsletters, subscribers or jobs, or the Joomla articles/categories used as presets. Back up bridge-owned data before uninstalling if it must be retained.
+
+## Development and testing
+
+| Directory | Contents |
+| --- | --- |
+| `source/` | Installable component source and manifest. |
+| `scripts/` | ZIP build script. |
+| `tests/` | Standalone regressions and opt-in Joomla integration runners. |
+| `docs/` | Email-output protocol and integration guidance. |
+| `reference/` | Separate upstream compatibility reference package. |
+| `dist/` | Latest bridge installation ZIP. |
+
+With PHP CLI and the required XML/Phar support:
+
+```sh
 php tests/unit.php
 php tests/archive-unit.php
+php tests/dependency-unit.php
+php tests/email-urls.php
+php tests/email-preparation.php
+php tests/install-cleanup.php
 php scripts/build.php
 php tests/package.php
-~~~
+```
 
-Το build γράφει ZIP με manifest στη ρίζα και αποκλειστικά Linux-style separators (/). Διατηρεί μόνο το τελευταίο com_newsletterbridge-*.zip μέσα στο dist, χωρίς να επηρεάζει το reference ZIP.
+The build creates a ZIP with a root manifest and portable `/` paths. It keeps only the latest bridge ZIP in `dist/`; earlier releases are documented below.
 
-Οι opt-in Joomla integration runners στο tests χρειάζονται εγκατεστημένο bridge και Simple Newsletter, site bootstrap, πρόσβαση σε MySQL/MariaDB και δικαίωμα δημιουργίας/διαγραφής προσωρινών test tables. Τρέχουν μόνο σε εξουσιοδοτημένο περιβάλλον δοκιμών. Το joomla-integration.php δημιουργεί ξεχωριστό random prefix, **άδειους** πίνακες με την πραγματική δομή, τεχνητούς subscribers μόνο εκεί, και child DI container με υποχρεωτικό mock mailer. Δεν αντιγράφει πραγματικούς συνδρομητές. Αφαιρεί τους προσωρινούς πίνακες σε finally.
+Integration runners require a disposable Joomla installation with the bridge, Simple Newsletter and MySQL/MariaDB, plus permission to create/remove fixtures. They use mock mail transport and cleanup blocks. Setup for the temporary email-provider fixture is documented in the [protocol verification instructions](docs/EMAIL_OUTPUT_PROTOCOL.md#verification).
 
-Τα e2e-fixtures.php / browser-data.php / archive-browser-data.php χρησιμοποιούν το bootstrap joomla-inspect.php στο /tmp. Δημιουργούν προσωρινούς users/groups και αποθηκεύουν state για cleanup και επαναφορά ACL. Δημιουργούν επίσης το κανονικό Registered menu item του bridge, το οποίο παραμένει μετά το cleanup. Μην εκτελείτε τα fixtures σε production. Οι controllers runners απαιτούν αυτά τα fixtures και ένα προσωρινό author newsletter. Κάθε case εκτελείται σε ξεχωριστό SiteApplication με υποχρεωτικό mock mailer.
+Standalone tests and browser previews do not certify every Joomla release or mail client. Validate installation, ACL, editors, checkout, provider output and batch recovery in a test installation before production use. Use a mock transport or isolated mail catcher for development.
 
-Η χρήση CLI installer στο συγκεκριμένο Docker πρέπει να γίνεται με **--user www-data**, ώστε τα αρχεία να παραμένουν εγγράψιμα από τον web installer. Εγκατάσταση ως root μπορεί να προκαλέσει Copy file failed στην επόμενη web αναβάθμιση.
+## Version history
 
-Παραδείγματα για το συγκεκριμένο local Docker περιβάλλον:
+### 1.4.0
 
-~~~text
-docker cp tests/joomla-inspect.php catichisi-local-web-1:/tmp/newsletterbridge-inspect.php
-docker cp tests/joomla-integration.php catichisi-local-web-1:/tmp/newsletterbridge-integration.php
-docker exec catichisi-local-web-1 php /tmp/newsletterbridge-integration.php /var/www/html
-~~~
+- Introduced the common versioned email-output protocol and optional `newsletter` provider plugins.
+- Removed the bridge-specific Sources renderer; each supplying extension now owns its email output.
+- Added provider result validation and unresolved-token protection while retaining fixed send snapshots.
+- Upgrade cleanup preserves template overrides and newsletter content.
 
-Το preset-integration.php απαιτεί το bootstrap newsletterbridge-inspect.php στο /tmp και δημιουργεί προσωρινή κατηγορία/άρθρα στην πραγματική Joomla βάση. Χρησιμοποιεί mandatory mock mailer και finally cleanup. Τα preset-browser-fixtures.php / preset-controllers.php χρησιμοποιούνται μετά το e2e-fixtures setup. Καθαρίστε πρώτα την κατηγορία/articles και έπειτα τους e2e users. Οι προσωρινές ρυθμίσεις και grants επαναφέρονται.
+### 1.3.2
 
-Η στατική ανάλυση και τα mocks δεν υποκαθιστούν λειτουργικό Joomla test. Σε νέο περιβάλλον ελέγξτε εγκατάσταση/αναβάθμιση, menu routing, πραγματικό editor, override, ACL ανά χρήστη, CSRF, checkout δύο sessions, batch resume/cancel και email rendering με mock ή απομονωμένο mail catcher, μετά από έγκριση για αποστολές.
+- Added the first direct Sources integration for version 2 selections, with five email layouts, public-only article resolution and fixed job snapshots.
+- Superseded by the provider mechanism in 1.4.0.
 
-## Έλεγχοι που πραγματοποιήθηκαν — 2026-10-08
+### 1.3.1
 
-- PHP syntax checks για όλα τα PHP αρχεία του component.
-- Standalone security tests: **3.677 assertions** για ACL matrix, ownership, dual send grants, job binding, inputs/UTF-8, ασφαλή return URLs, checkout, lock, sample-only tests, counter recovery και suppression global purge.
-- **46** επιπλέον standalone archive assertions για HTML/URL sanitisation, αντικατάσταση προσωπικών πεδίων και το νέο ACL.
-- **579** έλεγχοι XML, manifest references, language keys και ZIP structure/paths.
-- Επιτυχής εγκατάσταση και αναβάθμιση μέσω του πραγματικού Joomla installer στο local Docker Joomla **6.1.3**.
-- **56** integration assertions σε πραγματικά Joomla models/MySQL, με **6 mock emails στη μνήμη** και μηδενικές πραγματικές αποστολές.
-- **19** πραγματικά controller dispatch cases για CSRF, HTTP method, task allowlist και author denial, με υποχρεωτικό mock transport.
-- **42** επιπλέον πραγματικά Joomla article preset assertions: name matching, translated overrides, native assets/workflow, subject retention, ownership/View Levels, checkout, duplicates, concurrent lock και αποκατάσταση αποτυχημένων saves. Μηδενικά mail calls.
-- **11** νέα preset controller cases για CSRF, HTTP method, task allowlist, validation, anonymous και foreign overwrite denial.
-- Browser article presets: TinyMCE, νέο preset χωρίς αποθήκευση του newsletter, ίδιο όνομα χωρίς διπλή επιλογή, reload/apply της αντικατάστασης και ανεξάρτητο νέο όνομα στον ίδιο επιλογέα.
-- **12** πραγματικά archive controller cases για CSRF, HTTP method, task allowlist, ρητή έγκριση και foreign resource denial.
-- Browser δημόσιου αρχείου: TinyMCE, ιδιωτική αποθήκευση και προεπισκόπηση, ρητή δημοσίευση, anonymous ανάγνωση, απόσυρση με άμεσο 404, pagination 20+2 και native archive override. Η φόρμα εγγραφής ελέγχθηκε ως προς action, fields, CSRF και ασφαλές return, χωρίς υποβολή που θα έστελνε email επιβεβαίωσης.
-- Browser: author login χωρίς administrator access, create/save/edit, native TinyMCE, preset, unpublished default, sandboxed preview, pagination 20+4, native override, sender publish/send screen, και HTTP 403 για anonymous/foreign/send-screen πρόσβαση.
+- Enabled Joomla editor buttons, excluding pagebreak/readmore.
+- Converted relative image, link and supported background/srcset URLs to absolute URLs in previews, test messages and send snapshots.
 
-Οι web POST δοκιμές αποστολής δεν εκτελέστηκαν: ο αυτόματος έλεγχος έγκρισης τις απέρριψε λόγω του κινδύνου χρήσης πραγματικού mailer στη web συνεδρία. Οι αντίστοιχοι έλεγχοι έγιναν στο mock-protected Joomla harness. Δεν δοκιμάστηκε πραγματική SMTP παράδοση.
+### 1.3.0
+
+- Made upstream version/hash differences advisory while retaining required API, schema and storage checks.
+- Improved preset selector styling, compact management controls and placeholder guidance.
+- Hid the Components menu entry and translated configuration titles.
+
+### 1.2.1
+
+- Standardised Greek terminology for newsletters, layouts and presets.
+
+### 1.2.0
+
+- Added reusable article-based presets in a configurable category.
+- Added same-name overrides and separate subject metadata, with article ACL and checkout protection.
+
+### 1.1.0
+
+- Added the combined subscription/archive menu item.
+- Added private-by-default public editions, explicit review/publication and a separate archive permission.
+
+### 1.0.0
+
+- Initial frontend management, editor, built-in presets, preview/test and batch sending.
+- Added resource ACL, dual send permissions, CSRF protection and checkout/checkin integration.
 
 ## License
 
-GPL version 2 or later. Το Simple Newsletter παραμένει ξεχωριστό εγκατεστημένο extension και δεν συμπεριλαμβάνεται στο bridge ZIP.
-
-## Ελληνική ορολογία — 1.2.1
-
-Στην ελληνική διεπαφή χρησιμοποιείται «Ενημερωτικό δελτίο», με τις αντίστοιχες πτώσεις και τον πληθυντικό. Η ονομασία του εξαρτώμενου προϊόντος Simple Newsletter παραμένει ως επίσημη ονομασία.
-
-## Έκδοση 1.3.0 — συμβατότητα και διεπαφή
-
-Η ελληνική ορολογία χρησιμοποιεί «διάταξη» για layout και «πρότυπο» για preset. Ο επιλογέας προτύπων χρησιμοποιεί native select με form-select/inputbox, κληρονομεί τυπογραφία και χρώματα του template και παρέχει προσαρμογή ύψους, περιθωρίων και focus χωρίς εξάρτηση από συγκεκριμένο theme. Τα native overrides παραμένουν διαθέσιμα.
-
-Έλεγχος συμβατότητας: php tests/dependency-unit.php. Οι 15 δοκιμές καλύπτουν warning-only version/hashes και υποχρεωτικά schema/storage/API/enabled/Joomla gates. Δεν πραγματοποιούνται αποστολές.
-
-Στο local Joomla ελέγχθηκαν επίσης 6 πραγματικές περιπτώσεις factory/admin rendering με διαφορετική και κενή cached έκδοση, με υποχρεωτικό rollback. Το tests/dependency-joomla.php απαιτεί το bootstrap /tmp/newsletterbridge-inspect.php και εκτελείται μόνο σε εξουσιοδοτημένο test περιβάλλον.
-
-Το bridge δεν εμφανίζεται στο admin menu Components. Οι ρυθμίσεις παραμένουν διαθέσιμες από τη Γενική Διαμόρφωση του Joomla και οι προειδοποιήσεις συμβατότητας εμφανίζονται εκεί. Η αλλαγή διατηρεί την έκδοση 1.3.0.
+GNU General Public License version 2 or later, as declared in the component manifest. Simple Newsletter is a separate project with its own copyright and licensing notices.

@@ -14,7 +14,9 @@ namespace Joomla\CMS\Component { class ComponentHelper {
 } }
 namespace Joomla\CMS\Language { class Text { public static function _($key) { return $key; } } }
 namespace Joomla\String { class StringHelper { public static function strtolower($text) { return function_exists('mb_strtolower') ? mb_strtolower($text,'UTF-8') : strtolower($text); } } }
+namespace Joomla\CMS\Uri { class Uri { public static function root() { return 'https://example.invalid/sub/'; } } }
 namespace Joomla\CMS\Mail { interface MailerFactoryInterface {} }
+namespace Joomla\CMS\Plugin { class PluginHelper { public static function getPlugin($group) { return []; } } }
 namespace SaintArt\Component\SimpleNewsletter\Administrator\Helper {
     class NewsletterHelper {
         public static function replaceTags($body, $data) { return strtr($body, ['{name}' => $data['name'], '{email}' => $data['email'], '{unsubscribe_link}' => $data['token']]); }
@@ -30,7 +32,7 @@ namespace {
     define('_JEXEC', 1);
     define('JPATH_SITE', dirname(__DIR__) . '/source/site');
     $base = dirname(__DIR__) . '/source/site/src/Service/';
-    foreach (['Policy','InputGuard','PresetNames','PresetLibrary','Bridge'] as $class) { require $base . $class . '.php'; }
+    foreach (['Policy','InputGuard','PresetNames','PresetLibrary','EmailUrls','EmailPreparation','Bridge'] as $class) { require $base . $class . '.php'; }
     use SuperSoft\Component\Newsletterbridge\Site\Service\Policy;
     use SuperSoft\Component\Newsletterbridge\Site\Service\InputGuard;
     use SuperSoft\Component\Newsletterbridge\Site\Service\Bridge;
