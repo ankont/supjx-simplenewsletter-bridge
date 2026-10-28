@@ -25,7 +25,7 @@ foreach (['site','admin'] as $client) {
     }
 }
 $m = simplexml_load_file($source . '/newsletterbridge.xml');
-check((string) $m->creationDate !== '' && (string) $m->version === '1.4.0', 'Manifest metadata');
+check((string) $m->creationDate !== '' && (string) $m->version === '1.5.1', 'Manifest metadata');
 foreach ([$m->files, $m->administration->files] as $group) {
     foreach ($group->children() as $entry) check(file_exists($source . '/' . $group['folder'] . '/' . (string) $entry), 'Missing manifest file');
 }
@@ -37,6 +37,7 @@ check(count($archives) === 1, 'Exactly one bridge ZIP required');
 $zip = new PharData($archives[0]);
 check(isset($zip['newsletterbridge.xml']), 'Manifest must be in ZIP root');
 check(isset($zip['script.php']) && isset($zip['docs/EMAIL_OUTPUT_PROTOCOL.md']), 'Upgrade cleanup and email protocol documentation packaged');
+check(isset($zip['docs/EDITOR_PRESENTATION.md']), 'Per-editor presentation contract documentation packaged');
 check(!isset($zip['site/src/Service/SourcesEmail.php']) && !isset($zip['site/layouts/email/sources.php']), 'No Sources renderer or fallback layout in bridge package');
 check(!isset($zip['tests/fixtures/newsletterbridgefixture.php']), 'Test provider must not ship in ZIP');
 foreach (new RecursiveIteratorIterator($zip) as $entry) {

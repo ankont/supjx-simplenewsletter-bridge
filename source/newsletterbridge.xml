@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="component" method="upgrade">
   <name>COM_NEWSLETTERBRIDGE</name><author>SuperSoft</author>
-  <creationDate>2026-10-23</creationDate><version>1.4.0</version>
+  <creationDate>2026-10-28</creationDate><version>1.5.1</version>
   <license>GNU General Public License version 2 or later</license>
   <description>COM_NEWSLETTERBRIDGE_DESCRIPTION</description>
   <namespace path="src">SuperSoft\Component\Newsletterbridge</namespace>
@@ -14,8 +14,8 @@
     <language tag="en-GB">en-GB/com_newsletterbridge.sys.ini</language>
   </languages>
   <administration>
-    <menu hidden="true">COM_NEWSLETTERBRIDGE</menu>
-    <files folder="admin"><folder>sql</folder><folder>services</folder><folder>src</folder><filename>access.xml</filename><filename>config.xml</filename><filename>compatibility.json</filename></files>
+    <menu link="index.php?option=com_newsletterbridge&amp;view=newsletters">COM_NEWSLETTERBRIDGE</menu>
+    <files folder="admin"><folder>sql</folder><folder>services</folder><folder>src</folder><folder>tmpl</folder><filename>access.xml</filename><filename>config.xml</filename><filename>compatibility.json</filename></files>
     <languages folder="admin/language">
       <language tag="el-GR">el-GR/com_newsletterbridge.ini</language>
       <language tag="el-GR">el-GR/com_newsletterbridge.sys.ini</language>

@@ -25,7 +25,11 @@ final class EmailPreparation
         // No providers: no event, user switch or extension boot is needed.
         if (!PluginHelper::getPlugin('newsletter')) { self::assertPrepared($html); return $html; }
         $app = Factory::getApplication();
-        if (!$app->isClient('site')) { throw new \RuntimeException('COM_NEWSLETTERBRIDGE_EMAIL_PREPARE_FAILED', 503); }
+        if (!$app->isClient('site') && !($app->isClient('administrator') && $app->getIdentity()->authorise('core.manage', 'com_newsletterbridge'))) {
+            throw new \RuntimeException('COM_NEWSLETTERBRIDGE_EMAIL_PREPARE_FAILED', 503);
+        }
+        // Legacy item/token/depth hints remain for older providers. The host
+        // enforces bytes only; providers own selection and recursion policy.
         $policy = ['version' => 1, 'purpose' => $purpose, 'publicOnly' => true,
             'rootUrl' => Uri::root(), 'limits' => ['maxBytes' => self::MAX_BYTES, 'maxItems' => 60, 'maxTokens' => 8, 'maxDepth' => 3]];
         $document = new Registry($policy + ['html' => $html, 'usage' => ['items' => 0, 'tokens' => 0], 'errors' => [], 'unresolved' => []]);
@@ -51,9 +55,9 @@ final class EmailPreparation
         foreach ($policy as $key => $value) {
             if (($data[$key] ?? null) !== $value) { throw new \RuntimeException('COM_NEWSLETTERBRIDGE_EMAIL_PREPARE_INVALID', 503); }
         }
-        foreach (['items' => 60, 'tokens' => 8] as $key => $limit) {
+        foreach (['items', 'tokens'] as $key) {
             $value = $data['usage'][$key] ?? null;
-            if (!is_int($value) || $value < 0 || $value > $limit) { throw new \RuntimeException('COM_NEWSLETTERBRIDGE_EMAIL_PREPARE_LIMIT', 400); }
+            if (!is_int($value) || $value < 0) { throw new \RuntimeException('COM_NEWSLETTERBRIDGE_EMAIL_PREPARE_LIMIT', 400); }
         }
         if (!is_array($data['errors'] ?? null) || !is_array($data['unresolved'] ?? null) || !is_string($data['html'] ?? null)) {
             throw new \RuntimeException('COM_NEWSLETTERBRIDGE_EMAIL_PREPARE_INVALID', 503);

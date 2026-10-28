@@ -5,6 +5,7 @@
  */
 define('_JEXEC', 1);
 define('JPATH_BASE', $argv[1] ?? '/var/www/html');
+if (in_array('--administrator', $argv, true)) { define('JPATH_THEMES', JPATH_BASE . '/administrator/templates'); }
 $_SERVER['HTTP_HOST']='localhost:8089'; $_SERVER['SERVER_NAME']='localhost'; $_SERVER['REQUEST_URI']='/'; $_SERVER['SCRIPT_NAME']='/index.php';
 $_SERVER['PHP_SELF']='/index.php';
 require JPATH_BASE . '/includes/defines.php'; require JPATH_BASE . '/includes/framework.php';
@@ -188,6 +189,7 @@ try {
     unset($user->testRights['com_newsletterbridge:core.edit.state']);
     $form=$model->getForm([],false); check($form->getField('published')===false,'state field removed by ACL');
     if (in_array('--email-providers', $argv, true)) { require __DIR__ . '/email-provider-joomla-cases.php'; }
+    if (in_array('--administrator', $argv, true)) { require __DIR__ . '/admin-joomla-cases.php'; }
     echo 'PASS: '.$checks.' Joomla '.(new \Joomla\CMS\Version())->getShortVersion().' integration assertions; '.count($mock->messages).' messages captured in memory; zero real mail.'.PHP_EOL;
 } finally {
     $bridgeParams->set('preset_category',$priorPresetCategory);

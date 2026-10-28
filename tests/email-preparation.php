@@ -55,9 +55,18 @@ namespace {
         check(Prep::render('{fixture:{}}',$purpose)==='<p>Rendered {name}</p>','provider output');
         check($app->user===$identity,'identity restored');
     }
+    foreach (['preview','test','send'] as $purpose) {
+        $app->handler=function($event) {
+            $doc=$event->getArgument('document');
+            $doc->set('html','<p>Large public selection</p>');
+            $doc->set('usage.items',120); $doc->set('usage.tokens',16);
+        };
+        check(Prep::render('{fixture:{}}',$purpose)==='<p>Large public selection</p>','accurate counters above legacy caps accepted');
+        check($app->user===$identity,'identity restored for large selection');
+    }
     foreach([
         fn($d)=>$d->set('publicOnly',false), fn($d)=>$d->set('version',99),
-        fn($d)=>$d->set('usage.items',61), fn($d)=>$d->set('usage.tokens',-1),
+        fn($d)=>$d->set('usage.items','61'), fn($d)=>$d->set('usage.tokens',-1),
         fn($d)=>$d->set('errors',['fixture.failure']), fn($d)=>$d->set('unresolved',['fixture']),
         fn($d)=>$d->set('html',[]), fn($d)=>$d->set('html',str_repeat('x',2000001)),
         fn($d)=>$d->set('extra','not part of the protocol'), fn($d)=>$d->set('usage.extra',1),
@@ -65,6 +74,12 @@ namespace {
         $app->handler=fn($event)=>$change($event->getArgument('document'));
         denied(fn()=>Prep::render('Body','test'),[503,503,400,400,503,400,503,400,503,503][$index]);
         check($app->user===$identity,'identity restored after bad provider result');
+    }
+    foreach (['items','tokens'] as $key) {
+        foreach ([-1,1.5,'9',null,true] as $value) {
+            $app->handler=fn($event)=>$event->getArgument('document')->set('usage.'.$key,$value);
+            denied(fn()=>Prep::render('Body','preview'),400);
+        }
     }
     $app->handler=function(){throw new \RuntimeException('private configuration');};
     try { Prep::render('Body','send'); } catch(\RuntimeException $e) { check($e->getMessage()==='COM_NEWSLETTERBRIDGE_EMAIL_PREPARE_FAILED' && $e->getPrevious()===null,'provider error is masked even in exception chains'); }

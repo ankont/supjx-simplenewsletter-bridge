@@ -1,4 +1,4 @@
-# Email output protocol v1 — Newsletter Bridge 1.4.0
+# Email output protocol v1 β€” Newsletter Bridge 1.4.0+
 
 ## Ownership and execution
 
@@ -6,7 +6,7 @@ Email providers are optional Joomla plugins in group **`newsletter`**. Each exte
 
 The host imports only group `newsletter` and synchronously dispatches **`onNewsletterPrepareEmail`** once per preview, explicit test email or new send. This is not `onContentPrepare`: ordinary pages and status/process/resume/cancel requests do not dispatch it. No providers means no plugin boot, event or identity switch. Plugin metadata lookup still uses Joomla's normal plugin cache.
 
-Providers run in normal Joomla ordering. There is **one pass**, with no automatic redispatch or retry. A provider must not recursively dispatch the host event. It handles its own nested syntax within the shared limits. If it produces another provider's syntax, that provider must run later; unresolved syntax fails closed at the end. Avoid cross-provider token generation and cycles.
+Providers run in normal Joomla ordering. There is **one pass**, with no automatic redispatch or retry. A provider must not recursively dispatch the host event. It handles its own nested syntax within its own bounded selection and recursion policy. If it produces another provider's syntax, that provider must run later; unresolved syntax fails closed at the end. Avoid cross-provider token generation and cycles.
 
 Joomla remains the only shared dependency; providers must not reference bridge PHP classes or require its installation to boot. Use `SubscriberInterface` and `EventInterface`. If the bridge is absent, the provider is simply never called by it. Use Public access for the provider plugin: public content preparation must not depend on an author's plugin access level.
 
@@ -27,9 +27,9 @@ Document data on entry:
     'rootUrl' => 'https://example.test/subdirectory/', // Joomla Uri::root()
     'limits' => [
         'maxBytes' => 2000000,
-        'maxItems' => 60,
-        'maxTokens' => 8,
-        'maxDepth' => 3,
+        'maxItems' => 60, // legacy provider hint; not a host cap
+        'maxTokens' => 8, // legacy provider hint; not a host cap
+        'maxDepth' => 3, // legacy provider hint; not a host cap
     ],
     'html' => '<p>Author content, including extension tokens and {name}...</p>',
     'usage' => ['items' => 0, 'tokens' => 0],
@@ -38,7 +38,7 @@ Document data on entry:
 ]
 ```
 
-Only **`html`, `usage.items`, `usage.tokens`, `errors`, `unresolved`** may change. Do not replace/reset another provider's counters or diagnostics. Use `$document->get('limits.maxItems')` for nested reads and `$document->set('usage.items', $newTotal)` for writes. `Registry::toArray()` converts nested Registry objects into arrays. Integers must remain integers; HTML must be a UTF-8 string.
+Only **`html`, `usage.items`, `usage.tokens`, `errors`, `unresolved`** may change. Do not replace/reset another provider's counters or diagnostics. Use `$document->get('limits.maxBytes')` for nested reads and `$document->set('usage.items', $newTotal)` for writes. `Registry::toArray()` converts nested Registry objects into arrays. Integers must remain integers; HTML must be a UTF-8 string.
 
 The version, purpose, public policy, root URL and limits are immutable. Mutating them fails preparation. `purpose` is informational: produce equivalent content for all three modes. Do not embed test-only content, random values, timestamps unrelated to selected resources, subscriber-specific values or send side effects.
 
@@ -73,7 +73,7 @@ final class SourcesEmail extends CMSPlugin implements SubscriberInterface
             return; // No resource lookup, layout work or assets for unrelated content.
         }
         // Sources-owned API must validate configuration and public access,
-        // enforce shared budgets BEFORE expensive work, render safe email HTML,
+        // enforce byte bounds and provider-owned work limits, render safe email HTML,
         // update cumulative usage and preserve unrelated markup/placeholders.
         // $result = ...;
         // $document->set('html', $result);
@@ -89,7 +89,9 @@ The bridge checks newsletter/job ACL first, then temporarily loads an anonymous 
 
 Resolve only publicly accessible and published resources, including category/ancestor access and publication windows and the site's language policy. Never expose private fields, subscriber data or tokens. Any provider resource cache must include the effective public access policy and relevant configuration.
 
-Read limits from the document; enforce the remaining cumulative item/token budgets and nesting depth before querying or recursing. Maintain `usage.items` and `usage.tokens` for all rendered items/tokens, including nested selections. Avoid unbounded result sets and N+1 lookups. The host validates final counters and the 2 MB UTF-8 input/output bound; it cannot preempt arbitrary provider PHP or expensive SQL. Providers must bound their own work.
+From Bridge 1.5.1, the host validates `usage.items` and `usage.tokens` as nonnegative integers without cumulative caps. Keep accurate cumulative counters, including nested selections; never clamp or reset them. The immutable `maxItems`/`maxTokens`/`maxDepth` fields remain only as legacy hints for older providers, which may still apply their own limits. Sources 4.3.0 ignores these hints and owns its shared `contents_levels` setting and depth/cycle header fallback. The bridge adds no second recursion policy.
+
+The host still enforces the 2 MB UTF-8 input/output bound. Providers must respect `limits.maxBytes` and bound their own queries and recursion, avoiding unbounded result sets and N+1 lookups. The host cannot preempt arbitrary provider PHP or expensive SQL.
 
 Return HTML suitable for email, with escaped values, safe links/images and no scripts, iframes, forms, embedded code execution or dependence on the site's CSS, JavaScript, icon fonts or interactive UI. Native Joomla layout overrides belong to the provider. Do not indiscriminately dispatch normal content events. Render only explicitly supported constructs; document omitted custom fields and unsupported resources.
 
@@ -100,6 +102,8 @@ Leave `{name}`, `{email}`, `{unsubscribe_link}`, `{confirm_link}`, `{sitename}`,
 Extension markers use the reserved form `{namespace:...}` (for example `{sources:{...}}`). Unrecognised `{word}` markers are also reserved, except for the seven newsletter placeholders above. The host performs a final generic guard for remaining brace markers in text, attributes and comments, excluding style/script blocks so CSS braces are not interpreted as tokens. The guard is **not** a provider parser, validator or sanitizer. Providers must explicitly report invalid, unsupported, encoded or misplaced forms of their own syntax, including any syntax not covered by this guard.
 
 On a recognised invalid or unsupported selection, either append a stable non-sensitive diagnostic code to `errors`/`unresolved`, preserving previous entries, or throw. The host maps errors to localised generic messages and never displays raw provider exception details. `errors` nonempty or an exception stops preparation; `unresolved` nonempty or a remaining reserved marker stops preparation. No test mail or new job is created after failure. Lack of public matches may return an empty section if that is the extension's documented behaviour.
+
+From Bridge 1.5.0, final preparation also runs in the administrator application after the extra `core.manage` boundary. The public-only identity and protocol document are unchanged. Sources-block live editor presentation uses the separate Sources 4.2.0 per-editor context contract; see [editor presentation](EDITOR_PRESENTATION.md). It does not dispatch this event or create jobs.
 
 ## Snapshots and migration
 

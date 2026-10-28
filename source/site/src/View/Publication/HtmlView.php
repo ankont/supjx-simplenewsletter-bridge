@@ -15,7 +15,7 @@ class HtmlView extends BridgeView
         $this->initialise();
         $id = InputGuard::id(Factory::getApplication()->getInput()->get('id', '', 'raw'));
         $this->item = (new Archive())->draft($id);
-        $this->form = Form::getInstance('com_newsletterbridge.publication', JPATH_COMPONENT . '/forms/publication.xml', ['control' => 'jform']);
+        $this->form = Form::getInstance('com_newsletterbridge.publication', JPATH_SITE . '/components/com_newsletterbridge/forms/publication.xml', ['control' => 'jform']);
         $editor = ComponentHelper::getParams('com_newsletterbridge')->get('editor', 'tinymce');
         $this->form->setFieldAttribute('body', 'editor', $editor . '|none');
         $this->form->bind((array) $this->item);

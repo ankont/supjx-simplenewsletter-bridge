@@ -54,3 +54,24 @@ No real email was sent. SMTP delivery, confirmation-email delivery, inbox render
 - 3,677 security/unit, 18 URL, 46 archive, 15 dependency and 644 package assertions passed. PHP syntax and git diff whitespace checks passed.
 - Full API contract is packaged at docs/EMAIL_OUTPUT_PROTOCOL.md; Sources handoff prompt is docs/SOURCES_EMAIL_PROMPT.md.
 - Sources 4.0.3 does not yet provide the new newsletter plugin. Existing Sources source tokens intentionally fail closed until its provider is implemented. No claim of Sources integration or inbox-rendering validation for 1.4.0. Already rendered snapshots remain usable; ordinary newsletters are unchanged.
+
+## 1.5.0 — 2026-10-26
+
+- Added per-editor Sources presentation via the documented Sources 4.2.0 initial script-options contract, using the actual Joomla Form field ID before input rendering. No Sources renderer/parser/layout/CSS transformations were added to the host.
+- Host lifecycle observation removes/restores only its own field declaration on detach/reattach and pagehide/pageshow. Sources owns raw-editor reinit/destroy subscriptions and cancellation; the host creates no runtime presentation overrides. Missing API leaves editing available with an explicit unconfirmed-email notice.
+- Added a native administrator workspace through shared site models/controllers/templates and thin administrator MVC adapters. Every backend management entry additionally requires core.manage, while resource/job scope, CSRF, checkout and dual-send grants remain required. Public subscription views are not exposed as backend management views.
+- 9 standalone editor-declaration assertions passed, including multiple IDs, preservation of other options and CLI/non-HTML handling.
+- 10 real TinyMCE/JCE browser-engine fixtures passed with read-only Sources 4.2 modules, frontend/backend styles and desktop/mobile viewports. All five email layouts, token-only GetContent, simultaneous site/email editors, raw-editor destruction/reinit, host removal and missing Sources were checked. Preview AJAX was mocked in these isolated UI fixtures.
+- After Sources 4.2.0 was installed, actual browser checks passed on both the local frontend and backend newsletter editor: five layout requests each confirmed presentation=email, purpose=preview, renderer=EmailRenderer, styles=[] and token-only saved content. No newsletter save, job, snapshot or subscriber write occurred in these browser checks. Temporary users/groups mapping/sessions cleaned up. Guided-tour auto-start was disabled only for the temporary test account.
+- 112 real Joomla 6.2.0 host integration assertions passed, with twelve messages captured in memory and zero real mail: existing frontend pipeline plus native backend dispatch/render, real field metadata, validation, access denials and unchanged mock transport.
+- Sources' own isolated real Joomla integration runner was executed read-only against installed 4.2.0 through a temporary candidate symlink. 49 endpoint/provider/public-policy checks passed, including five AJAX renders matching final email output, identity restoration, snapshot stability and no redispatch in batches. Three messages captured in memory; existing provider preserved and synthetic tables removed.
+- Existing suites passed: 3,677 security/unit, 49 protocol, 18 URL, 46 archive, 15 dependency and 5 installer-cleanup assertions. All 58 component PHP files passed syntax checks. Package checks verify portable paths and both protocol documents.
+- No Sources or Catichisi template files were changed. No commit/push/release performed. These checks do not certify Outlook/Gmail inbox rendering. Sources live AJAX still requires its own content-authoring permissions; declaring email context does not grant them.
+
+## 2026-10-28 ? Bridge 1.5.1 provider counter alignment
+
+- Removed host cumulative item/token rejection. Accurate counters of 120 items / 16 tokens pass preview, test and new-send preparation; legacy limit metadata remains immutable and documented as hints only. Sources owns its 4.3.0 Contents depth/header contract.
+- 65 standalone protocol assertions passed, including malformed/negative counters, public-policy mutation, oversized output, unresolved syntax and identity restoration. 3677 security/unit assertions passed.
+- Installed 1.5.1 on local Joomla 6.2.0. 112 integration assertions passed with the real Joomla provider loader, frontend/backend boundaries, fixed snapshots and batch processing. The fixture reports 120 items / 16 containers; 12 emails were captured in memory, zero real sends. Temporary fixture data/plugin cleaned up by the runner.
+- This verifies the host contract, not actual Sources 4.3.0 nested rendering or mail-client appearance. Those remain provider/inbox verification work. Joomla 5.4 was not tested.
+- Package validation: 690 assertions passed. Deferred legacy dismantling is recorded in README; no current functionality removed, no Sources/template edits, no commit/push/release.

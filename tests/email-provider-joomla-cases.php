@@ -10,7 +10,7 @@ check(!(int)$original->setQuery("SELECT COUNT(*) FROM #__extensions WHERE type='
 $pluginCache=new ReflectionProperty(\Joomla\CMS\Plugin\PluginHelper::class,'plugins');
 $savedPlugins=$pluginCache->getValue();
 try {
-    denied(fn()=>EmailPreparation::render('{sources:{"version":2}}','test'),400,'Sources without provider fails closed');
+    denied(fn()=>EmailPreparation::render('{uninstalledfixture:{}}','test'),400,'unknown provider syntax fails closed');
     $user->testRights['com_newsletterbridge:core.edit.state']=true;
     for($dir=$pluginDir;!is_dir($dir);$dir=dirname($dir)) $newDirs[]=$dir;
     mkdir($pluginDir,0755,true);
@@ -19,9 +19,15 @@ try {
         'client_id'=>0,'enabled'=>1,'access'=>1,'protected'=>0,'manifest_cache'=>'{}','params'=>'{}','custom_data'=>'','system_data'=>'','ordering'=>99999,'state'=>0];
     $original->insertObject('#__extensions',$extension,'extension_id'); $pluginId=(int)$extension->extension_id;
     $pluginCache->setValue(null,null);
+    // Existing installed providers may have loaded this group earlier in the
+    // same test request. Import only the newly inserted fixture explicitly.
+    \Joomla\CMS\Plugin\PluginHelper::importPlugin('newsletter','newsletterbridgefixture');
     $raw='{bridgefixture:{"article":1}}';
     $idProvider=$bridge->save(0,['title'=>'Provider protocol fixture','subject'=>'Provider {name}','body'=>'Fixture','published'=>1]);
     $fixture=(object)['id'=>$idProvider,'body'=>$raw]; $db->updateObject('#__simplenewsletter_templates',$fixture,'id');
+    // Accurate counters beyond the old caps must survive preview/test/start
+    // and the unchanged snapshot/process pipeline, without real email.
+    PlgNewsletterNewsletterbridgefixture::$mode='large';
     $preview=$bridge->preview($idProvider);
     check(class_exists('PlgNewsletterNewsletterbridgefixture',false),'real Joomla plugin loader invoked');
     check(str_contains($preview,'Original provider article Sample'),'preview provider then subscriber placeholders');

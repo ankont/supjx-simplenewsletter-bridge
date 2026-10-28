@@ -4,7 +4,7 @@
 
 Simple Newsletter Frontend Bridge (`com_newsletterbridge`) is an independent Joomla component that adds a permission-controlled authoring and sending workspace to **Simple Newsletter**.
 
-Current version: **1.4.0**. English and Greek interface translations are included.
+Current version: **1.5.0**. English and Greek interface translations are included.
 
 ## What is Simple Newsletter?
 
@@ -42,9 +42,9 @@ Different or unknown Simple Newsletter versions, and reference-file hash differe
 ## Installation and setup
 
 1. Install and enable Simple Newsletter. Configure Joomla mail settings and the sender settings in Simple Newsletter.
-2. Install [com_newsletterbridge-1.4.0.zip](dist/com_newsletterbridge-1.4.0.zip) through **System → Install → Extensions**.
-3. Open **System → Global Configuration** and select **Newsletter Bridge**. Configure the editor, optional preset category and permissions. The bridge intentionally has no entry in the administrator Components menu.
-4. Create a menu item of type **Simple Newsletter Frontend Bridge → Newsletter management**. Choose an appropriate access level, such as Registered or a dedicated author view level.
+2. Install [com_newsletterbridge-1.5.1.zip](dist/com_newsletterbridge-1.5.1.zip) through **System β†’ Install β†’ Extensions**.
+3. Open **System β†’ Global Configuration** and select **Newsletter Bridge**. Configure the editor, optional preset category and permissions. The Components menu also provides a backend workspace for users with component management permission.
+4. Create a menu item of type **Simple Newsletter Frontend Bridge β†’ Newsletter management**. Choose an appropriate access level, such as Registered or a dedicated author view level.
 5. Grant the component permissions below. Menu access alone does not grant permission to manage newsletters.
 6. Sign in through the frontend and open the new menu item. Save changes before previewing or sending.
 
@@ -56,6 +56,7 @@ Management requires a signed-in user and `newsletterbridge.access` on `com_newsl
 
 | Permission | Allows |
 | --- | --- |
+| `core.manage` | Enter the bridge backend, in addition to the normal newsletter permissions. |
 | `newsletterbridge.access` | Enter frontend management; does not grant access to other authors' content. |
 | `core.create` | Create newsletters; the server assigns ownership. |
 | `core.edit` | Read and edit all newsletters. |
@@ -82,6 +83,8 @@ Choose a dedicated Joomla article category in the bridge settings to enable cust
 - The same name as an existing article preset updates that article, if permitted.
 
 Matching ignores case and redundant whitespace and recognises English/Greek built-in names. Preset articles retain Joomla access, ownership and checkout controls. Creating or replacing one also requires the corresponding `com_content` category/article permissions. Preset subjects are stored separately from article text.
+
+Sources 4.2.0 or later supports explicit email presentation in the newsletter editor, including TinyMCE/JCE where Sources supports them. The bridge declares the actual field ID before editor initialisation; article editors on the same page keep their own context. Missing or older APIs leave editing available and show an unconfirmed-preview notice. Sources preview still requires its own content-authoring permissions; the bridge does not grant or bypass them. See [editor presentation](docs/EDITOR_PRESENTATION.md).
 
 An editor button that inserts extension tokens does not automatically make them render in email. See [Email-output extensions](#email-output-extensions).
 
@@ -126,7 +129,7 @@ Frontend views use standard Joomla override locations. For example:
 
 ```text
 components/com_newsletterbridge/tmpl/newsletters/default.php
-    → templates/YOUR_TEMPLATE/html/com_newsletterbridge/newsletters/default.php
+    β†’ templates/YOUR_TEMPLATE/html/com_newsletterbridge/newsletters/default.php
 ```
 
 Available views: `newsletters`, `newsletter`, `preview`, `send`, `archive`, `issue`, `publications`, `publication`. Preserve JavaScript data attributes and form controls when overriding interactive views. ACL checks are independent of the markup. Email-output providers own and document their own layout override paths.
@@ -167,7 +170,23 @@ Integration runners require a disposable Joomla installation with the bridge, Si
 
 Standalone tests and browser previews do not certify every Joomla release or mail client. Validate installation, ACL, editors, checkout, provider output and batch recovery in a test installation before production use. Use a mock transport or isolated mail catcher for development.
 
+## Deferred legacy cleanup
+
+After the successor component and data migration have been completed and verified, narrow this bridge to frontend access to Simple Newsletter's supported functionality. Remove the additional backend workspace and capabilities that cannot behave consistently through upstream administration. This is deferred work, not a removal in this release. Preserve the complete implementation in version control and transfer useful integrations to the successor first. Review stored extension tokens and pending jobs before disabling providers; do not leave content that can be mailed unresolved.
+
 ## Version history
+
+### 1.5.1
+
+- Accept accurate provider counters above 60 articles / 8 containers, aligning with Sources 4.3.0 Contents header fallback. Provider recursion policy remains provider-owned.
+- Retain public-only preparation, immutable policy, nonnegative integer counters, the 2 MB bound and render-once send snapshots.
+
+
+### 1.5.0
+
+- Added a backend workspace using the shared newsletter models, forms and actions, with an additional `core.manage` check.
+- Declare Sources 4.2 email presentation per newsletter editor before initialisation; preserve tokens, isolate instances and clean up host-owned declarations on removal.
+- Report unavailable/unconfirmed live email preview without blocking editing. Final preparation remains protocol v1 with anonymous/public-only provider dispatch in both clients.
 
 ### 1.4.0
 

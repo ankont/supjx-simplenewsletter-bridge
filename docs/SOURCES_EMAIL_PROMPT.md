@@ -1,3 +1,5 @@
+> Historical handoff for Bridge 1.4.0. For Sources 4.3.0 and Bridge 1.5.1, the item/token/depth limits below are legacy hints only. The current host contract is [EMAIL_OUTPUT_PROTOCOL.md](EMAIL_OUTPUT_PROTOCOL.md); Sources owns Contents depth/cycle fallback.
+
 # Prompt για το chat του Sources
 
 Θέλω να προσθέσεις **προαιρετική υποστήριξη email output στο πακέτο Sources**, συμβατή με τον νέο κοινό μηχανισμό του Newsletter Bridge 1.4.0. Εργάσου στο `C:\Users\AnKont\Code\SuperSoft\Joomla\Extensions\pkg_sources`. Μην αλλάξεις το bridge από αυτό το workspace.

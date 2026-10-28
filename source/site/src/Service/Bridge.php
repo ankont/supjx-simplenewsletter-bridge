@@ -20,6 +20,9 @@ final class Bridge
     {
         $this->app = $app ?: Factory::getApplication();
         $this->policy = new Policy($this->app->getIdentity());
+        if (method_exists($this->app, 'isClient') && $this->app->isClient('administrator')) {
+            $this->policy->require($this->policy->allows('core.manage'));
+        }
         $this->policy->require($this->policy->enter());
         $this->factory = $factory ?: Dependency::factory();
         $this->db = $db ?: Factory::getContainer()->get(DatabaseInterface::class);

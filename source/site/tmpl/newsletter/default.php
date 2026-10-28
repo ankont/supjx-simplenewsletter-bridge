@@ -8,6 +8,7 @@ HTMLHelper::_('behavior.formvalidator');
 <h1><?= Text::_($this->item->id ? 'COM_NEWSLETTERBRIDGE_EDIT' : 'COM_NEWSLETTERBRIDGE_NEW') ?></h1>
 <p><?= Text::_('COM_NEWSLETTERBRIDGE_EDITOR_HELP') ?></p>
 <p><?= Text::_('COM_NEWSLETTERBRIDGE_EMAIL_PREPARE_HELP') ?></p>
+<p class="alert alert-info" data-nb-email-preview-status role="status"><?= Text::_('COM_NEWSLETTERBRIDGE_EDITOR_EMAIL_CONTEXT_NOTICE') ?></p>
 <div class="nb-presets">
 <label for="nb-preset"><?= Text::_('COM_NEWSLETTERBRIDGE_PRESET') ?></label>
 <select id="nb-preset" class="form-select inputbox nb-preset-select"><option value=""><?= Text::_('COM_NEWSLETTERBRIDGE_SELECT_PRESET') ?></option>

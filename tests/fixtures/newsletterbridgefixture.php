@@ -23,7 +23,7 @@ class PlgNewsletterNewsletterbridgefixture extends \Joomla\CMS\Plugin\CMSPlugin 
         if (!str_contains($html, '{bridgefixture:')) { return; }
         $html = str_replace('{bridgefixture:{"article":1}}', '<p>' . htmlspecialchars(self::$title, ENT_QUOTES, 'UTF-8') . ' {name}</p><img src="images/provider.jpg">', $html);
         $document->set('html', $html);
-        $document->set('usage.items', $document->get('usage.items') + 1);
-        $document->set('usage.tokens', $document->get('usage.tokens') + 1);
+        $document->set('usage.items', $document->get('usage.items') + (self::$mode === 'large' ? 120 : 1));
+        $document->set('usage.tokens', $document->get('usage.tokens') + (self::$mode === 'large' ? 16 : 1));
     }
 }
